@@ -1,6 +1,6 @@
 # crypt
 
-Algoritmo criptografico de transposicao.
+Algoritmo criptografico de transposicao.  
 Implementacao para estudo e demonstracao de seu funcionamento.
 
 Parte do Projeto Integrado V.

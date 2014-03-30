@@ -7,6 +7,6 @@ Parte do Projeto Integrado V.
 
 # Uso
 
-`crypt -e [arquivo.txt]` para encriptar o conteudo do aqruivo.
+`crypt -e [arquivo.txt]` para encriptar o conteudo do arquivo.
 
 `crypt -d [arquivo.txt]` para decriptar o conteudo do arquivo.

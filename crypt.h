@@ -92,8 +92,6 @@ int *crack_the_code(const char *pass){
     strcpy(apass, pass);
     for( i = 7; i >= 0; i--){
         for( j = gap[i]; j < plen; j++ ){
-            if( j > plen )
-                break;
             temp = apass[j];
             for( k = j; (k >= gap[i]) && (apass[k - gap[i]] > temp); k -= gap[i] ){
                 apass[k] = apass[k - gap[i]];

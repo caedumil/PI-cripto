@@ -70,13 +70,15 @@ char *read_file(char *filename){
 
 void write_file(char *filename, char *text){
     FILE *file = fopen(filename, "w");
-    int n = 0;
+    int ch, n = 0;
 
     if( ! file ){
         fprintf(stderr, "Erro ao abrir arquivo para escrita, saindo\n");
         exit(EXIT_FAILURE);
     }
-    while( fputc(text[n++], file) != 0 ){}
+    while( (ch = text[n++]) != 0 ){
+        fputc(ch, file);
+    }
     fputc('\n', file);
     fclose(file);
 }
@@ -130,13 +132,13 @@ void encrypt(char *filename, char *pass){
     int i, j, n, *order = crack_the_code(pass);
 
     if( (tlen % plen) != 0 ){
-        text = tail(text, tlen, plen-(tlen%plen));
+        text = tail(text, tlen, plen-(tlen%plen)+1);
         tlen = strlen(text);
     }
     scrabble = malloc(tlen * sizeof *scrabble);
     n = 0;
     for( i = 0; i < plen; i++ ){
-        for( j = 0; j < tlen; j += plen ){
+        for( j = 0; (order[i]+j) < tlen; j += plen ){
             scrabble[n++] = text[order[i]+j];
         }
     }
@@ -152,7 +154,7 @@ void decrypt(char *filename, char*pass){
     in_order = malloc(tlen * sizeof *in_order);
     n = 0;
     for( i = 0; i < plen; i++ ){
-        for( j = 0; j < tlen; j += plen ){
+        for( j = 0; (order[i]+j) < tlen; j += plen ){
             in_order[order[i]+j] = text[n++];
         }
     }

@@ -131,11 +131,14 @@ void encrypt(char *filename, char *pass){
     int tlen = strlen(text);
     int i, j, n, *order = crack_the_code(pass);
 
-    if( (tlen % plen) != 0 ){
-        text = tail(text, tlen, plen-(tlen%plen)+1);
-        tlen = strlen(text);
-    }
-    scrabble = malloc(tlen * sizeof *scrabble);
+/*  em arquivos grandes isso aqui gera complicação
+ *
+ *    if( (tlen % plen) != 0 ){
+ *        text = tail(text, tlen, plen-(tlen%plen)+1);
+ *        tlen = strlen(text);
+ *    }
+ */
+    scrabble = malloc(tlen * (sizeof *scrabble));
     n = 0;
     for( i = 0; i < plen; i++ ){
         for( j = 0; (order[i]+j) < tlen; j += plen ){
@@ -158,11 +161,14 @@ void decrypt(char *filename, char*pass){
             in_order[order[i]+j] = text[n++];
         }
     }
-    /* melhorar esse pedaço aqui, nao funciona 100% das vezes */
-    for( n = n-1; n > 0; n-- ){
-        if( in_order[n] == 'c' && in_order[n-1] == 'b' && in_order[n-2] == 'a' )
-            in_order[n-2] = 0;
-    }
+/*  melhorar esse pedaço aqui, nao funciona 100% das vezes
+ *  fica de fora por enquanto
+ *
+ *    for( n = n-1; n > 0; n-- ){
+ *        if( in_order[n] == 'c' && in_order[n-1] == 'b' && in_order[n-2] == 'a' )
+ *            in_order[n-2] = 0;
+ *    }
+ */
     write_file(filename, in_order);
 }
 

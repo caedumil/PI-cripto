@@ -15,8 +15,6 @@ void write_file(char *filename, char *text);
 
 int *crack_the_code(const char *pass);
 
-char *tail(char *text, int size, int add);
-
 void encrypt(char *filename, char *pass);
 
 void decrypt(char *filename, char*pass);

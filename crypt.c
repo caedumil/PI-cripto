@@ -123,7 +123,6 @@ void encrypt(char *filename, char *pass){
         }
     }
     scrabble[n] = 0;
-    tlen = strlen(scrabble);
     write_file(filename, scrabble);
 }
 

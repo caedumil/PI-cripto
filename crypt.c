@@ -86,7 +86,7 @@ int *crack_the_code(const char *pass){
     int i, j, k, plen = strlen(pass);
     int *code = malloc((strlen(pass)) * (sizeof *code));
     int gap[8] = {1, 4, 10, 23, 57, 132, 301, 701};
-    char *apass = malloc((strlen(pass)) * (sizeof *apass));
+    char *apass = malloc((strlen(pass)+1) * (sizeof *apass));
     char temp;
 
     strcpy(apass, pass);
@@ -115,7 +115,7 @@ void encrypt(char *filename, char *pass){
     int tlen = strlen(text);
     int i, j, n, *order = crack_the_code(pass);
 
-    scrabble = malloc(tlen * (sizeof *scrabble));
+    scrabble = malloc((tlen+1) * (sizeof *scrabble));
     n = 0;
     for( i = 0; i < plen; i++ ){
         for( j = 0; (order[i]+j) < tlen; j += plen ){
@@ -132,7 +132,7 @@ void decrypt(char *filename, char*pass){
     int tlen = strlen(text);
     int i, j, n, *order = crack_the_code(pass);
 
-    in_order = malloc(tlen * sizeof *in_order);
+    in_order = malloc((tlen+1) * sizeof *in_order);
     n = 0;
     for( i = 0; i < plen; i++ ){
         for( j = 0; (order[i]+j) < tlen; j += plen ){

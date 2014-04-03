@@ -5,21 +5,19 @@
 #include <unistd.h>
 #include "crypt.h"
 
+char *get_pass(char*);
+
 int main(int argc, char *argv[]){
     char pass[100];
     int opt;
 
-    if( argc > 2 ){
-        printf("Enter the key: ");
-        input(pass);
-    }
     while( (opt = getopt(argc, argv, "e:d:")) != -1 ){
         switch(opt){
             case 'e':
-                encrypt(optarg, pass);
+                encrypt(optarg, get_pass(pass));
                 break;
             case 'd':
-                decrypt(optarg, pass);
+                decrypt(optarg, get_pass(pass));
                 break;
             default:
                 fprintf(stderr, "Usage: %s [-d | -e] [file ...]\n", argv[0]);
@@ -27,4 +25,10 @@ int main(int argc, char *argv[]){
         }
     }
     exit(EXIT_SUCCESS);
+}
+
+char *get_pass(char *pass){
+    printf("Enter the key: ");
+    input(pass);
+    return pass;
 }

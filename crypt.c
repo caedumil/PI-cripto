@@ -29,6 +29,14 @@
 #include <string.h>
 #include "crypt.h"
 
+/*  set_term() desabilita o retorno de caracteres no terminal. Basicamente a
+ *  funcao cria pega os atributos atuais do terminal rodando o programa q salva
+ *  numa struct.
+ *  Para desabilitar o retorno é feita uma operacao com bits para negar os
+ *  atributos relacionados somente com o ECHO, negando-o logicamente com o
+ *  operador '~'.
+ *  O retorno é restaurado usando a mesma operacao, so que com o ECHO padrao.
+ */
 #ifdef __linux__
 #include <termios.h>
 int set_term(int mode){
@@ -58,6 +66,13 @@ int set_term(int mode){
 }
 #endif
 
+/*  set_string() aloca dinamicamente um vetor de tamanho suficiente para
+ *  acomodar todo o texto a ser criptografado.
+ *  O tamanho do texto é determinado colocando o ponteiro do tipo FILE no final
+ *  do arquivo aberto (usando fseek) e contando a diferenca entre o inicio e o
+ *  fim do arquivo (usando ftell).
+ *  o vetor alocado é o retorno da funcao.
+ */
 char *set_string(FILE *file){
     char *big_ass_string;
 
@@ -67,6 +82,12 @@ char *set_string(FILE *file){
     return big_ass_string;
 }
 
+/*  read_file usa o argumnto passado para o programa e tenta abrir o arquivo
+ *  especificado. Caso consiga, usa set_string e em seguida carrega o vetor com
+ *  o conteudo do arquivo, cararcter por caracter, ate que a funcao fgetc
+ *  informe que chegou ao fim do arquivo ( retornando EOF - End Of File).
+ *  O vetor com tudo presente no arquivo e o retorno da funcao.
+ */
 char *read_file(char *filename){
     FILE *file = fopen(filename, "r");
     char *big_ass_string;
@@ -87,6 +108,12 @@ char *read_file(char *filename){
     return big_ass_string;
 }
 
+/*  write_file() escreve a string gerada pelo programa em um arquivo.
+ *  O vetor é percorrido posicao a posicao e o caracter é escrito no arquivo
+ *  (usando fputc).
+ *  Quando o fim da string e encontrado ( '\0' ) a funcao encerra a escrita e
+ *  fecha o arquivo.
+ */
 void write_file(char *filename, char *text){
     FILE *file = fopen(filename, "w");
     int ch, n = 0;
@@ -102,7 +129,14 @@ void write_file(char *filename, char *text){
     fclose(file);
 }
 
-/*  crack_the_code, aka the shellsort algorithm */
+/*  crack_the_code
+ *  A chave criptografica e copiada em um novo vetor apass. apass e usado para
+ *  ordenar os itens em ordem alfabetica usando o algoritmo de ordenacao shellsort.
+ *  Depois de ordenado, apass e a chave original pass sao comparadas para
+ *  encontrar a posicao de cada letra de apass em pass.
+ *  Essa ordem e importante para criptografar e descriptografar o texto e fica
+ *  armazenada no vetor de inteiros code, que e o retorno da funcao.
+ */
 int *crack_the_code(const char *pass){
     int i, j, k, plen = strlen(pass);
     int *code = malloc((strlen(pass)) * (sizeof *code));
@@ -130,6 +164,17 @@ int *crack_the_code(const char *pass){
     return code;
 }
 
+/*  encrypt() e a funcao que embaralha todo o texto.
+ *  A frase original é percorrida em intervalos e guardada em um vetor novo
+ *  scrabble.
+ *  O intervalo é igual ao tamanho da palavra-chave. Uma palavra chave de 6
+ *  letras faz o texto ser percorrido 0,6,12,18... depois 1,7,13,19... e assim
+ *  por diante.
+ *  A posicao das letras na palavra-chave tambem interfere no modo que o texto e
+ *  percorrido, por exemplo, CRIPTO faz com que os indices e seus multiplos
+ *  sejam percorridos na ordem 0,6... 2,8... 5,11... 3,9... 1,7... 4,10...
+ *  Essa ordem e obtida em crack_the_code();
+ */
 void encrypt(char *filename, char *pass){
     char *scrabble, *text = read_file(filename);
     int plen = strlen(pass);
@@ -147,13 +192,19 @@ void encrypt(char *filename, char *pass){
     write_file(filename, scrabble);
 }
 
+/*  decrypt() faz o inverso de encrypt().
+ *  A funcao percorre o texto seguindo os caracteres um apos o outro e os guarda
+ *  no vetor in_order seguindo o intervalo e ordem definidos pela palavra-chave.
+ *  Usar uma palavra chave diferente da usada para encriptar o texto vai gerar
+ *  um texto ainda mais embaralhado aqui.
+ */
 void decrypt(char *filename, char*pass){
     char *in_order, *text = read_file(filename);
     int plen = strlen(pass);
     int tlen = strlen(text);
     int i, j, n, *order = crack_the_code(pass);
 
-    in_order = malloc((tlen+1) * sizeof *in_order);
+    in_order = malloc((tlen+1) * (sizeof *in_order));
     n = 0;
     for( i = 0; i < plen; i++ ){
         for( j = 0; (order[i]+j) < tlen; j += plen ){
@@ -164,6 +215,12 @@ void decrypt(char *filename, char*pass){
     write_file(filename, in_order);
 }
 
+/*  input() le a entrada de dados via teclado.
+ *  Antes de iniciar a leitura o retorno do terminal e desabilitado e
+ *  reabilitado somente apos toda leitura ter sido realizada.
+ *  Isso previne que alguem espiando por cima do ombro do usuario consiga ler a
+ *  palavra-chave na tela do computador.
+ */
 void input(char *txt){
     char tmp;
 

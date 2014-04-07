@@ -229,6 +229,7 @@ int input(char *txt){
         *txt++ = tmp;
     *txt = 0;
     set_term(0);
+    putchar('\n');
     return check_pass(head);
 }
 

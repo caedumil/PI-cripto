@@ -221,12 +221,30 @@ void decrypt(char *filename, char*pass){
  *  Isso previne que alguem espiando por cima do ombro do usuario consiga ler a
  *  palavra-chave na tela do computador.
  */
-void input(char *txt){
-    char tmp;
+int input(char *txt){
+    char tmp, *head = txt;
 
     set_term(1);
     while( (tmp = getchar()) != '\n' )
         *txt++ = tmp;
     *txt = 0;
     set_term(0);
+    return check_pass(head);
+}
+
+/*  check_pass() percorre a palavra-chave a fim de encontrar algum caracter
+ *  repetido. Se houver repeticao a funcao retorna 0, so nao houver retorna 1.
+ */
+int check_pass(char *pass){
+    int c = 1;
+
+    while( *pass != 0 ){
+        for( ; c < strlen(pass); c++ ){
+            if( *pass == pass[c] )
+                return 0;
+        }
+        pass++;
+        c++;
+    }
+    return 1;
 }

@@ -28,19 +28,19 @@
 
 int set_term(int);
 
-char *set_string(FILE *file);
+char *set_string(FILE*);
 
-char *read_file(char *filename);
+char *read_file(char*);
 
-void write_file(char *filename, char *text);
+void write_file(char*, char*);
 
-int *crack_the_code(const char *pass);
+int *crack_the_code(const char*);
 
-void encrypt(char *filename, char *pass);
+void encrypt(char*, char*);
 
-void decrypt(char *filename, char*pass);
+void decrypt(char*, char*);
 
-int input(char *txt);
+int input(char*);
 
 int check_pass(char*);
 

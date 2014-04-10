@@ -42,10 +42,7 @@
 int set_term(int mode){
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
-    if( mode )
-        term.c_lflag &= ~ECHO;
-    else
-        term.c_lflag &= ECHO;
+    term.c_lflag &= ( mode ) ? ~ECHO : ECHO;
     if( tcsetattr(STDIN_FILENO, TCSAFLUSH, &term) == -1 )
         return 0;
     return 1;
@@ -56,10 +53,7 @@ int set_term(int mode){
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     DWORD sett = 0;
     GetConsoleMode(hStdin, &sett);
-    if( mode )
-        sett &= ~ENABLE_ECHO_INPUT;
-    else
-        sett &= ENABLE_ECHO_INPUT;
+    sett &= ( mode ) ? ~ENABLE_ECHO_INPUT : ENABLE_ECHO_INPUT;
     if( SetConsoleMode(hStdin, sett) == 0 )
         return 0;
     return 1;

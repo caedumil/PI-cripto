@@ -82,7 +82,7 @@ char *set_string(FILE *file){
  *  informe que chegou ao fim do arquivo (retornando EOF - End Of File).
  *  O vetor com tudo presente no arquivo é o retorno da funcao.
  */
-char *read_file(char *filename){
+char *read_file(const char *filename){
     FILE *file = fopen(filename, "r");
     char *big_ass_string;
     int ch, n = 0;
@@ -108,7 +108,7 @@ char *read_file(char *filename){
  *  Quando o fim da string é encontrado ( '\0' ) a função encerra a escrita e
  *  fecha o arquivo.
  */
-void write_file(char *filename, char *text){
+void write_file(const char *filename, const char *text){
     FILE *file = fopen(filename, "w");
     int ch, n = 0;
 
@@ -169,7 +169,7 @@ int *crack_the_code(const char *pass){
  *  sejam percorridos na ordem 0,6... 2,8... 5,11... 3,9... 1,7... 4,10...
  *  Essa ordem é obtida em crack_the_code();
  */
-void encrypt(char *filename, char *pass){
+void encrypt(const char *filename, const char *pass){
     char *scrabble, *text = read_file(filename);
     int plen = strlen(pass);
     int tlen = strlen(text);
@@ -192,7 +192,7 @@ void encrypt(char *filename, char *pass){
  *  Usar uma palavra chave diferente da usada para encriptar o texto vai gerar
  *  um texto ainda mais embaralhado aqui.
  */
-void decrypt(char *filename, char*pass){
+void decrypt(const char *filename, const char*pass){
     char *in_order, *text = read_file(filename);
     int plen = strlen(pass);
     int tlen = strlen(text);
@@ -230,7 +230,7 @@ int input(char *txt){
 /*  check_pass() percorre a palavra-chave a fim de encontrar algum caractere
  *  repetido. Se houver repetição a função retorna 0, so nao houver retorna 1.
  */
-int check_pass(char *pass){
+int check_pass(const char *pass){
     int c = 1;
 
     while( *pass != 0 ){

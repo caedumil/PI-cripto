@@ -30,18 +30,18 @@ int set_term(int);
 
 char *set_string(FILE*);
 
-char *read_file(char*);
+char *read_file(const char*);
 
-void write_file(char*, char*);
+void write_file(const char*, const char*);
 
 int *crack_the_code(const char*);
 
-void encrypt(char*, char*);
+void encrypt(const char*, const char*);
 
-void decrypt(char*, char*);
+void decrypt(const char*, const char*);
 
 int input(char*);
 
-int check_pass(char*);
+int check_pass(const char*);
 
 #endif

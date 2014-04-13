@@ -31,7 +31,7 @@
 char *get_pass(char*);
 
 int main(int argc, char *argv[]){
-    char pass[100], *filename, *output;
+    char pass[100], *filename, *output = NULL;
     int opt, bin_mode[2] = { 0 };
 
     while( (opt = getopt(argc, argv, "e:d:o::")) != -1 ){

@@ -134,10 +134,10 @@ int *crack_the_code(const char *pass){
         }
     }
     code[0] = plen;
-    for( i = 1; i <= plen; i++ ){
+    for( i = 0; i <= plen; i++ ){
         for( j = 0; j < plen; j++ ){
             if( apass[i] == pass[j] )
-                code[i] = j;
+                code[i+1] = j;
         }
     }
     free(apass);

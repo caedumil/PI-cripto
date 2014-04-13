@@ -94,14 +94,15 @@ void enigma(const char *source, char *dest, const char *key, const int *mode){
 
 int handle_file(FILE *file, FILE *saveas, const int *order, const int mode){
     char block[1024], *cipher = malloc(1024 * (sizeof*cipher));
-    int sig;
+    int max_bytes = 1024 * (sizeof *block);
+    int sig, c;
 
     while( ! (sig = feof(file)) ){
-        memset(block, 0, (1024*sizeof *block));
-        fread(block, sizeof *block, sizeof block, file);
-        memset(cipher, 0, (1024*sizeof *cipher));
+        memset(block, 0, max_bytes);
+        c = fread(block, sizeof *block, max_bytes, file);
+        memset(cipher, 0, max_bytes);
         ( mode ) ? encrypt(block, order, cipher) : decrypt(block, order, cipher);
-        fwrite(cipher, sizeof *cipher, sizeof block, saveas);
+        fwrite(cipher, sizeof *cipher, (c < max_bytes) ? strlen(cipher) : max_bytes, saveas);
     }
     free(cipher);
     return sig;

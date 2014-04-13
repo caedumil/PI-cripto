@@ -31,22 +31,29 @@
 char *get_pass(char*);
 
 int main(int argc, char *argv[]){
-    char pass[100];
-    int opt;
+    char pass[100], *filename, *output;
+    int opt, bin_mode[2] = { 0 };
 
-    while( (opt = getopt(argc, argv, "e:d:")) != -1 ){
+    while( (opt = getopt(argc, argv, "e:d:o::")) != -1 ){
         switch(opt){
             case 'e':
-                encrypt(optarg, get_pass(pass));
+                bin_mode[1] = 1;
+                filename = optarg;
                 break;
             case 'd':
-                decrypt(optarg, get_pass(pass));
+                bin_mode[1] = 0;
+                filename = optarg;
+                break;
+            case 'o':
+                bin_mode[0] = 1;
+                output = optarg;
                 break;
             default:
                 fprintf(stderr, "Usage: %s [-d | -e] [file ...]\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
+    enigma(filename, output, get_pass(pass), bin_mode);
     exit(EXIT_SUCCESS);
 }
 

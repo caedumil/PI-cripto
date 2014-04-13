@@ -60,67 +60,51 @@ int set_term(int mode){
 }
 #endif
 
-/*  set_string() aloca dinâmicamente um vetor de tamanho suficiente para
- *  acomodar todo o texto a ser criptografado.
- *  O tamanho do texto é determinado colocando o ponteiro do tipo FILE no final
- *  do arquivo aberto (usando fseek) e contando a diferenca entre o inicio e o
- *  fim do arquivo (usando ftell).
- *  O vetor alocado é o retorno da função.
- */
-char *set_string(FILE *file){
-    char *big_ass_string;
+char *dest_name(const char *filename){
+    int len = strlen(filename);
+    char append[9] = "_out.txt";
+    char *ch, *name = malloc((len+9) * (sizeof *name));
 
-    fseek(file, 0L, SEEK_END);
-    big_ass_string = malloc((ftell(file)) * (sizeof *big_ass_string));
-    rewind(file);
-    return big_ass_string;
+    strcpy(name, filename);
+    if( (ch = strrchr(name, '.')) )
+        *ch = 0;
+    strcat(name, append);
+    return name;
 }
 
-/*  read_file usa o argumnto passado para o programa e tenta abrir o arquivo
- *  especificado. Caso consiga, usa set_string e em seguida carrega o vetor com
- *  o conteudo do arquivo, cararctere por caractere, até que a função fgetc
- *  informe que chegou ao fim do arquivo (retornando EOF - End Of File).
- *  O vetor com tudo presente no arquivo é o retorno da funcao.
- */
-char *read_file(const char *filename){
-    FILE *file = fopen(filename, "r");
-    char *big_ass_string;
-    int ch, n = 0;
+void enigma(const char *source, char *dest, const char *key, const int *mode){
+    FILE *dstfile, *srcfile = fopen(source, "r");
+    int *order = crack_the_code(key);
 
-    if( ! file ){
-        fprintf(stderr, "Erro ao abrir arquivo para leitura, saindo\n");
+    if( ! dest )
+        dest = dest_name(source);
+    dstfile = fopen(dest, "w+");
+    if( ! (srcfile || dstfile) ){
+        fprintf(stderr, "Erro ao abrir arquivo, saindo!\n");
         exit(EXIT_FAILURE);
     }
-    big_ass_string = set_string(file);
-    while( (ch = fgetc(file)) != EOF ){
-        big_ass_string[n++] = ch;
+    handle_file(srcfile, dstfile, order, mode[1]);
+    fclose(srcfile);
+    fclose(dstfile);
+    if( ! mode[0] ){
+        remove(source);
+        rename(dest, source);
     }
-    if( big_ass_string[n-1] == '\n' )
-        n--;
-    big_ass_string[n] = 0;
-    fclose(file);
-    return big_ass_string;
 }
 
-/*  write_file() escreve a string gerada pelo programa em um arquivo.
- *  O vetor é percorrido posicao a posicao e o caractere é escrito no arquivo
- *  (usando fputc).
- *  Quando o fim da string é encontrado ( '\0' ) a função encerra a escrita e
- *  fecha o arquivo.
- */
-void write_file(const char *filename, const char *text){
-    FILE *file = fopen(filename, "w");
-    int ch, n = 0;
+int handle_file(FILE *file, FILE *saveas, const int *order, const int mode){
+    char block[1024], *cipher = malloc(1024 * (sizeof*cipher));
+    int sig;
 
-    if( ! file ){
-        fprintf(stderr, "Erro ao abrir arquivo para escrita, saindo\n");
-        exit(EXIT_FAILURE);
+    while( ! (sig = feof(file)) ){
+        memset(block, 0, (1024*sizeof *block));
+        fread(block, sizeof *block, sizeof block, file);
+        memset(cipher, 0, (1024*sizeof *cipher));
+        ( mode ) ? encrypt(block, order, cipher) : decrypt(block, order, cipher);
+        fwrite(cipher, sizeof *cipher, sizeof block, saveas);
     }
-    while( (ch = text[n++]) != 0 ){
-        fputc(ch, file);
-    }
-    fputc('\n', file);
-    fclose(file);
+    free(cipher);
+    return sig;
 }
 
 /*  crack_the_code
@@ -133,7 +117,7 @@ void write_file(const char *filename, const char *text){
  */
 int *crack_the_code(const char *pass){
     int i, j, k, plen = strlen(pass);
-    int *code = malloc((strlen(pass)) * (sizeof *code));
+    int *code = malloc((strlen(pass)+1) * (sizeof *code));
     int gap[8] = {1, 4, 10, 23, 57, 132, 301, 701};
     char *apass = malloc((strlen(pass)+1) * (sizeof *apass));
     char temp;
@@ -148,14 +132,15 @@ int *crack_the_code(const char *pass){
             apass[k] = temp;
         }
     }
-    for( i = 0; i < plen; i++ ){
+    code[0] = plen;
+    for( i = 1; i <= plen; i++ ){
         for( j = 0; j < plen; j++ ){
             if( apass[i] == pass[j] )
                 code[i] = j;
         }
     }
     free(apass);
-    return code;
+    return ++code;
 }
 
 /*  encrypt() é a função que embaralha todo o texto.
@@ -169,21 +154,15 @@ int *crack_the_code(const char *pass){
  *  sejam percorridos na ordem 0,6... 2,8... 5,11... 3,9... 1,7... 4,10...
  *  Essa ordem é obtida em crack_the_code();
  */
-void encrypt(const char *filename, const char *pass){
-    char *scrabble, *text = read_file(filename);
-    int plen = strlen(pass);
-    int tlen = strlen(text);
-    int i, j, n, *order = crack_the_code(pass);
+void encrypt(const char *block, const int *order, char *cipher){
+    int tlen = strlen(block);
+    int i, j, n = 0;
 
-    scrabble = malloc((tlen+1) * (sizeof *scrabble));
-    n = 0;
-    for( i = 0; i < plen; i++ ){
-        for( j = 0; (order[i]+j) < tlen; j += plen ){
-            scrabble[n++] = text[order[i]+j];
+    for( i = 0; i < *(order-1); i++ ){
+        for( j = 0; (order[i]+j) < tlen; j += *(order-1) ){
+            cipher[n++] = block[order[i]+j];
         }
     }
-    scrabble[n] = 0;
-    write_file(filename, scrabble);
 }
 
 /*  decrypt() faz o inverso de encrypt().
@@ -192,21 +171,15 @@ void encrypt(const char *filename, const char *pass){
  *  Usar uma palavra chave diferente da usada para encriptar o texto vai gerar
  *  um texto ainda mais embaralhado aqui.
  */
-void decrypt(const char *filename, const char*pass){
-    char *in_order, *text = read_file(filename);
-    int plen = strlen(pass);
-    int tlen = strlen(text);
-    int i, j, n, *order = crack_the_code(pass);
+void decrypt(const char *cipher, const int *order, char *block){
+    int tlen = strlen(cipher);
+    int i, j, n = 0;
 
-    in_order = malloc((tlen+1) * (sizeof *in_order));
-    n = 0;
-    for( i = 0; i < plen; i++ ){
-        for( j = 0; (order[i]+j) < tlen; j += plen ){
-            in_order[order[i]+j] = text[n++];
+    for( i = 0; i < *(order-1); i++ ){
+        for( j = 0; (order[i]+j) < tlen; j += *(order-1) ){
+            block[order[i]+j] = cipher[n++];
         }
     }
-    in_order[n] = 0;
-    write_file(filename, in_order);
 }
 
 /*  input() lê a entrada de dados via teclado.

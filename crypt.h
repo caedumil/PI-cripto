@@ -28,17 +28,17 @@
 
 int set_term(int);
 
-char *set_string(FILE*);
+char *dest_name(const char*);
 
-char *read_file(const char*);
+void enigma(const char*, char*, const char*, const int*);
 
-void write_file(const char*, const char*);
+int handle_file(FILE*, FILE*, const int*, const int);
 
 int *crack_the_code(const char*);
 
-void encrypt(const char*, const char*);
+void encrypt(const char*, const int*, char*);
 
-void decrypt(const char*, const char*);
+void decrypt(const char*, const int*, char*);
 
 int input(char*);
 

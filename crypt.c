@@ -66,7 +66,7 @@ char *dest_name(const char *filename){
     char *ch, *name = malloc((len+9) * (sizeof *name));
 
     strcpy(name, filename);
-    if( (ch = strrchr(name, '.')) )
+    if( (ch = strstr(filename, append)) || (ch = strrchr(name, '.')) )
         *ch = 0;
     strcat(name, append);
     return name;

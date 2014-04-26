@@ -26,6 +26,8 @@
 #ifndef CRYPT_H_INCLUDED
 #define CRYPT_H_INCLUDED
 
+#define BLOCK_SIZE 1024
+
 int set_term(int);
 
 char *dest_name(const char*);

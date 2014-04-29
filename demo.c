@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
     char pass[100], *filename, *output = NULL;
     int opt, bin_mode[2] = { 0 };
 
-    while( (opt = getopt(argc, argv, "e:d:o::")) != -1 ){
+    while( (opt = getopt(argc, argv, "+e:d:o::")) != -1 ){
         switch(opt){
             case 'e':
                 bin_mode[1] = 1;
@@ -46,14 +46,21 @@ int main(int argc, char *argv[]){
                 break;
             case 'o':
                 bin_mode[0] = 1;
-                output = optarg;
+                output = ( optarg ) ? optarg : argv[optind];
                 break;
             default:
-                fprintf(stderr, "Usage: %s [-d | -e] [file ...]\n", argv[0]);
+                fprintf(stderr,\
+                "Usage: %s [-d | -e file.txt] [-o [new_file.txt]] \n",\
+                argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
+    if( ! output )
+        output = dest_name(filename);
     enigma(filename, output, get_pass(pass), bin_mode);
+    printf("<%s> %s as <%s>\n", filename,\
+    ( bin_mode[1] ) ? "encrypted" : "decrypted",\
+    ( bin_mode[0] ) ? output : filename);
     exit(EXIT_SUCCESS);
 }
 

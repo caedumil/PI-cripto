@@ -73,12 +73,10 @@ char *dest_name(const char *filename){
 }
 
 void enigma(const char *source, char *dest, const char *key, const int *mode){
-    FILE *dstfile, *srcfile = fopen(source, "r");
+    FILE *srcfile = fopen(source, "r");
+    FILE *dstfile = fopen(dest, "w+");
     int *order = crack_the_code(key);
 
-    if( ! dest )
-        dest = dest_name(source);
-    dstfile = fopen(dest, "w+");
     if( ! (srcfile || dstfile) ){
         fprintf(stderr, "Erro ao abrir arquivo, saindo!\n");
         exit(EXIT_FAILURE);

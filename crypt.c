@@ -180,37 +180,47 @@ void decrypt(const char *cipher, const int *order, char *block){
     }
 }
 
+char *get_input(const char *text, char *in, const int is_pass){
+    printf("%s", text);
+    if( input(in, is_pass) )
+        return in;
+    return get_input(text, in, is_pass);
+}
+
 /*  input() lê a entrada de dados via teclado.
  *  Antes de iniciar a leitura, o retorno do terminal e desabilitado e
  *  reabilitado somente após toda leitura ter sido realizada.
  *  Isso previne que alguem espiando por cima do ombro do usuário consiga ler a
  *  palavra-chave na tela do computador.
  */
-int input(char *txt){
+int input(char *txt, const int is_pass){
     char tmp, *head = txt;
 
-    set_term(1);
+    set_term(is_pass);
     while( (tmp = getchar()) != '\n' )
         *txt++ = tmp;
     *txt = 0;
-    set_term(0);
-    putchar('\n');
-    return check_pass(head);
+    if( is_pass ){
+        set_term(0);
+        putchar('\n');
+        return check_pass(head);
+    }
+    return 1;
 }
 
 /*  check_pass() percorre a palavra-chave a fim de encontrar algum caractere
  *  repetido. Se houver repetição a função retorna 0, so nao houver retorna 1.
  */
 int check_pass(const char *pass){
-    int c = 1;
+    int c;
 
     while( *pass != 0 ){
-        for( ; c < strlen(pass); c++ ){
-            if( *pass == pass[c] )
+        c = 1;
+        while( c < strlen(pass) ){
+            if( *pass == pass[c++] )
                 return 0;
         }
         pass++;
-        c++;
     }
     return 1;
 }

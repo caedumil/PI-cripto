@@ -29,7 +29,7 @@
 #include "crypt.h"
 
 int main(int argc, char *argv[]){
-    char pass[100], *filename, *output = NULL;
+    char *filename, *output = NULL;
     int opt, bin_mode[2] = { 0 };
 
     while( (opt = getopt(argc, argv, "+e:d:o::")) != -1 ){
@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
     }
     if( ! output )
         output = dest_name(filename);
-    enigma(filename, output, get_input("Enter the key: ", pass, 1), bin_mode);
+    enigma(filename, output, get_input("Enter the key: ", 100, 1), bin_mode);
     printf("<%s> %s as <%s>\n", filename,\
     ( bin_mode[1] ) ? "encrypted" : "decrypted",\
     ( bin_mode[0] ) ? output : filename);

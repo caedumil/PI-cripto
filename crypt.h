@@ -42,7 +42,7 @@ void encrypt(const char*, const int*, char*);
 
 void decrypt(const char*, const int*, char*);
 
-char *get_input(const char*, char*, const int);
+char *get_input(const char*, const int, const int);
 
 int input(char*, const int);
 

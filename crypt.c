@@ -180,11 +180,15 @@ void decrypt(const char *cipher, const int *order, char *block){
     }
 }
 
-char *get_input(const char *text, char *in, const int is_pass){
+char *get_input(const char *text, const int size, const int is_pass){
+    char *in = malloc(size * (sizeof *in));
+
     printf("%s", text);
-    if( input(in, is_pass) )
-        return in;
-    return get_input(text, in, is_pass);
+    if( ! input(in, is_pass) ){
+        free(in);
+        return get_input(text, size, is_pass);
+    }
+    return in;
 }
 
 /*  input() lê a entrada de dados via teclado.

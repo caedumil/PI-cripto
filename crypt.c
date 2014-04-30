@@ -184,7 +184,7 @@ void decrypt(const char *cipher, const int *order, char *block){
 char *get_input(const char *text, const int size, const int is_pass){
     char *in = calloc(size, sizeof *in);
 
-    printf("%s", text);
+    fprintf(stdout, "%s", text);
     if( ! input(in, is_pass) ){
         free(in);
         return get_input(text, size, is_pass);

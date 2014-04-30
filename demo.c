@@ -48,7 +48,7 @@ int main(int argc, char *argv[]){
                 break;
             default:
                 fprintf(stderr,\
-                "Usage: %s [-d | -e file.txt] [-o [new_file.txt]] \n",\
+                    "Usage: %s [-d | -e file.txt] [-o [new_file.txt]] \n",\
                 argv[0]);
                 exit(EXIT_FAILURE);
         }
@@ -56,8 +56,8 @@ int main(int argc, char *argv[]){
     if( ! output )
         output = dest_name(filename);
     enigma(filename, output, get_input("Enter the key: ", 100, 1), bin_mode);
-    printf("<%s> %s as <%s>\n", filename,\
-    ( bin_mode[1] ) ? "encrypted" : "decrypted",\
-    ( bin_mode[0] ) ? output : filename);
+    fprintf(stdout, "<%s> %s as <%s>\n", filename,\
+        ( bin_mode[1] ) ? "encrypted" : "decrypted",\
+        ( bin_mode[0] ) ? output : filename);
     exit(EXIT_SUCCESS);
 }

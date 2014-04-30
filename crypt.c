@@ -63,7 +63,7 @@ int set_term(int mode){
 char *dest_name(const char *filename){
     int len = strlen(filename);
     char append[9] = "_out.txt";
-    char *ch, *name = malloc((len+9) * (sizeof *name));
+    char *ch, *name = calloc(len+9, sizeof *name);
 
     strcpy(name, filename);
     if( (ch = strstr(filename, append)) || (ch = strrchr(name, '.')) )
@@ -91,7 +91,8 @@ void enigma(const char *source, char *dest, const char *key, const int *mode){
 }
 
 int handle_file(FILE *file, FILE *saveas, const int *order, const int mode){
-    char block[BLOCK_SIZE], *cipher = malloc(BLOCK_SIZE * (sizeof*cipher));
+    char *block = calloc(BLOCK_SIZE, sizeof *block);
+    char *cipher = calloc(BLOCK_SIZE, sizeof *cipher);
     int sig;
 
     while( ! (sig = feof(file)) ){
@@ -115,9 +116,9 @@ int handle_file(FILE *file, FILE *saveas, const int *order, const int mode){
  */
 int *crack_the_code(const char *pass){
     int i, j, k, plen = strlen(pass);
-    int *code = malloc((strlen(pass)+1) * (sizeof *code));
+    int *code = calloc(strlen(pass)+1, sizeof *code);
     int gap[8] = {1, 4, 10, 23, 57, 132, 301, 701};
-    char *apass = malloc((strlen(pass)+1) * (sizeof *apass));
+    char *apass = calloc(strlen(pass)+1, sizeof *apass);
     char temp;
 
     strcpy(apass, pass);
@@ -181,7 +182,7 @@ void decrypt(const char *cipher, const int *order, char *block){
 }
 
 char *get_input(const char *text, const int size, const int is_pass){
-    char *in = malloc(size * (sizeof *in));
+    char *in = calloc(size, sizeof *in);
 
     printf("%s", text);
     if( ! input(in, is_pass) ){

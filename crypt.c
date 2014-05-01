@@ -60,6 +60,12 @@ int set_term(int mode){
 }
 #endif
 
+/*  dest_name() usa o nome do arquivo a ser processado como base para o nome do
+ *  arquivo de saida. Dependendo das opções usadas na invocação do programa,
+ *  o arquivo nomeado aqui pode ser ou não temporário.
+ *  Essa função só é executada caso nenhum nome tenha sido especificado ao
+ *  executar o programa.
+ */
 char *dest_name(const char *filename){
     int len = strlen(filename);
     char append[9] = "_out.txt";
@@ -72,6 +78,10 @@ char *dest_name(const char *filename){
     return name;
 }
 
+/*  enigma() abre os arquivos de entrada e saída, chama pre_crypt() que vai
+ *  cuidar do processamento do texto, e substitui, ou não, o arquivo de entrada
+ *  pelo de saída.
+ */
 void enigma(const char *source, char *dest, const char *key, const int *mode){
     FILE *srcfile = fopen(source, "r");
     FILE *dstfile = fopen(dest, "w+");
@@ -90,6 +100,13 @@ void enigma(const char *source, char *dest, const char *key, const int *mode){
     }
 }
 
+/*  pre_crypt() lê o arquivo de entrada em blocos de BLOCK_SIZE bytes por vez,
+ *  até o fim do arquivo. Cada bloco é processado e gravado no arquivo de saída
+ *  antes de um novo bloco ser lido. O último byte dos blocos é '\0' para
+ *  garantir a marcação o final da string.
+ *  Ler o arquivo em blocos fixos permite controlar a quantidade de memória
+ *  usada pelo programa.
+ */
 int pre_crypt(FILE *file, FILE *saveas, const int *order, const int mode){
     char *before = calloc(BLOCK_SIZE, sizeof *before);
     char *after = calloc(BLOCK_SIZE, sizeof *after);
@@ -107,13 +124,16 @@ int pre_crypt(FILE *file, FILE *saveas, const int *order, const int mode){
     return sig;
 }
 
-/*  crack_the_code
- *  A chave criptografica é copiada em um novo vetor apass. apass é usado para
- *  arrumar os itens em ordem alfabetica usando o algoritmo de ordenacao shellsort.
- *  Depois de ordenado, apass e a chave original pass são comparadas para
- *  encontrar a posicao de cada letra de apass em pass.
+/*  crack_the_code()
+ *  A chave criptografica é copiada em um novo vetor 'apass'. 'apass' é usado
+ *  para arrumar os itens em ordem alfabetica usando o algoritmo de ordenacao
+ *  shellsort.
+ *  Depois de ordenado, 'apass' e a chave original 'pass' são comparadas para
+ *  encontrar a posicao de cada letra de 'apass' em 'pass'.
  *  Essa ordem é importante para criptografar e descriptografar o texto, e fica
- *  armazenada no vetor de inteiros code, que é o retorno da função.
+ *  armazenada no vetor de inteiros 'code', que é o retorno da função. A
+ *  primeira posição de 'code' guarda seu tamanho, e o ponteiro retornado
+ *  aponta para a segunda posição, escondendo a informação do tamanho do vetor.
  */
 int *crack_the_code(const char *pass){
     int i, j, k, plen = strlen(pass);
@@ -143,12 +163,11 @@ int *crack_the_code(const char *pass){
     return ++code;
 }
 
-/*  crypt() é a função que embaralha todo o texto.
+/*  crypt() é a função que modifica todo o texto.
  *  O bloco 'before' é percorrido em intervalos e guardada em um novo bloco
- *  'after'.
- *  O intervalo é igual ao tamanho da palavra-chave. Uma palavra chave de 6
- *  letras faz o texto ser percorrido 0,6,12,18... depois 1,7,13,19... e assim
- *  por diante.
+ *  'after'. O intervalo é igual ao tamanho da palavra-chave. Uma palavra chave
+ *  de 6 letras faz o texto ser percorrido 0,6,12,18... depois 1,7,13,19... e
+ *  assim por diante.
  *  A posição das letras na palavra-chave também interfere no modo que o texto é
  *  percorrido, por exemplo, CRIPTO faz com que os indices e seus múltiplos
  *  sejam percorridos na ordem 0,6... 2,8... 5,11... 3,9... 1,7... 4,10...
@@ -170,6 +189,9 @@ void crypt(const char *before, char *after, const int *order, const int is_enc){
     }
 }
 
+/*  get_input() cria um vetor para guardar a entrada de dados via teclado,
+ *  usando um tamanho especificado na chamada da função.
+ */
 char *get_input(const char *text, const int size, const int is_pass){
     char *in = calloc(size, sizeof *in);
 
@@ -182,10 +204,12 @@ char *get_input(const char *text, const int size, const int is_pass){
 }
 
 /*  input() lê a entrada de dados via teclado.
- *  Antes de iniciar a leitura, o retorno do terminal e desabilitado e
- *  reabilitado somente após toda leitura ter sido realizada.
- *  Isso previne que alguem espiando por cima do ombro do usuário consiga ler a
- *  palavra-chave na tela do computador.
+ *  Se 'is_pass' for diferente de zero, antes de iniciar a leitura, o retorno
+ *  do terminal e desabilitado e reabilitado somente após toda leitura ter sido
+ *  realizada. Isso previne que alguem espiando por cima do ombro do usuário
+ *  consiga ler a palavra-chave na tela do computador.
+ *  'is_pass' também determina se o vetor lido será verificado por caracteres
+ *  repetidos.
  */
 int input(char *txt, const int is_pass){
     char tmp, *head = txt;

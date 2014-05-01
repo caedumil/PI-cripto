@@ -82,22 +82,18 @@ char *dest_name(const char *filename){
  *  cuidar do processamento do texto, e substitui, ou não, o arquivo de entrada
  *  pelo de saída.
  */
-void enigma(const char *source, char *dest, const char *key, const int *mode){
+void enigma(const char *source, char *dest, const char *key, const int mode){
     FILE *srcfile = fopen(source, "r");
     FILE *dstfile = fopen(dest, "w+");
     int *order = crack_the_code(key);
 
-    if( ! (srcfile || dstfile) ){
+    if( ! (srcfile && dstfile) ){
         fprintf(stderr, "Erro ao abrir arquivo, saindo!\n");
         exit(EXIT_FAILURE);
     }
-    pre_crypt(srcfile, dstfile, order, mode[1]);
+    pre_crypt(srcfile, dstfile, order, mode);
     fclose(srcfile);
     fclose(dstfile);
-    if( ! mode[0] ){
-        remove(source);
-        rename(dest, source);
-    }
 }
 
 /*  pre_crypt() lê o arquivo de entrada em blocos de BLOCK_SIZE bytes por vez,

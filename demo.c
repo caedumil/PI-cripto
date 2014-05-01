@@ -30,34 +30,38 @@
 
 int main(int argc, char *argv[]){
     char *filename, *output = NULL;
-    int opt, bin_mode[2] = { 0 };
+    int opt, is_enc, keep_file = 0;
 
     while( (opt = getopt(argc, argv, "+e:d:o::")) != -1 ){
         switch(opt){
             case 'e':
-                bin_mode[1] = 1;
+                is_enc = 1;
                 filename = optarg;
                 break;
             case 'd':
-                bin_mode[1] = 0;
+                is_enc = 0;
                 filename = optarg;
                 break;
             case 'o':
-                bin_mode[0] = 1;
+                keep_file = 1;
                 output = ( optarg ) ? optarg : argv[optind];
                 break;
             default:
                 fprintf(stderr,\
                     "Usage: %s [-d | -e file.txt] [-o [new_file.txt]] \n",\
-                argv[0]);
+                    argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
     if( ! output )
         output = dest_name(filename);
-    enigma(filename, output, get_input("Enter the key: ", 100, 1), bin_mode);
+    enigma(filename, output, get_input("Enter the key: ", 100, 1), is_enc);
+    if( ! keep_file ){
+        remove(filename);
+        rename(output, filename);
+    }
     fprintf(stdout, "<%s> %s as <%s>\n", filename,\
-        ( bin_mode[1] ) ? "encrypted" : "decrypted",\
-        ( bin_mode[0] ) ? output : filename);
+        ( is_enc ) ? "encrypted" : "decrypted",\
+        ( keep_file ) ? output : filename);
     exit(EXIT_SUCCESS);
 }

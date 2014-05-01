@@ -32,7 +32,7 @@ int set_term(int);
 
 char *dest_name(const char*);
 
-void enigma(const char*, char*, const char*, const int*);
+void enigma(const char*, char*, const char*, const int);
 
 int pre_crypt(FILE*, FILE*, const int*, const int);
 

@@ -81,7 +81,7 @@ void enigma(const char *source, char *dest, const char *key, const int *mode){
         fprintf(stderr, "Erro ao abrir arquivo, saindo!\n");
         exit(EXIT_FAILURE);
     }
-    handle_file(srcfile, dstfile, order, mode[1]);
+    pre_crypt(srcfile, dstfile, order, mode[1]);
     fclose(srcfile);
     fclose(dstfile);
     if( ! mode[0] ){
@@ -90,19 +90,20 @@ void enigma(const char *source, char *dest, const char *key, const int *mode){
     }
 }
 
-int handle_file(FILE *file, FILE *saveas, const int *order, const int mode){
-    char *block = calloc(BLOCK_SIZE, sizeof *block);
-    char *cipher = calloc(BLOCK_SIZE, sizeof *cipher);
+int pre_crypt(FILE *file, FILE *saveas, const int *order, const int mode){
+    char *before = calloc(BLOCK_SIZE, sizeof *before);
+    char *after = calloc(BLOCK_SIZE, sizeof *after);
     int sig;
 
     while( ! (sig = feof(file)) ){
-        memset(block, 0, BLOCK_SIZE);
-        fread(block, sizeof *block, BLOCK_SIZE-1, file);
-        memset(cipher, 0, BLOCK_SIZE);
-        ( mode ) ? encrypt(block, order, cipher) : decrypt(block, order, cipher);
-        fwrite(cipher, sizeof *cipher, strlen(cipher), saveas);
+        memset(before, 0, BLOCK_SIZE);
+        fread(before, sizeof *before, BLOCK_SIZE-1, file);
+        memset(after, 0, BLOCK_SIZE);
+        crypt(before, after, order, mode);
+        fwrite(after, sizeof *after, strlen(after), saveas);
     }
-    free(cipher);
+    free(before);
+    free(after);
     return sig;
 }
 
@@ -142,41 +143,29 @@ int *crack_the_code(const char *pass){
     return ++code;
 }
 
-/*  encrypt() é a função que embaralha todo o texto.
- *  A frase original é percorrida em intervalos e guardada em um vetor novo
- *  scrabble.
+/*  crypt() é a função que embaralha todo o texto.
+ *  O bloco 'before' é percorrido em intervalos e guardada em um novo bloco
+ *  'after'.
  *  O intervalo é igual ao tamanho da palavra-chave. Uma palavra chave de 6
  *  letras faz o texto ser percorrido 0,6,12,18... depois 1,7,13,19... e assim
  *  por diante.
  *  A posição das letras na palavra-chave também interfere no modo que o texto é
  *  percorrido, por exemplo, CRIPTO faz com que os indices e seus múltiplos
  *  sejam percorridos na ordem 0,6... 2,8... 5,11... 3,9... 1,7... 4,10...
- *  Essa ordem é obtida em crack_the_code();
+ *  Essa ordem é obtida em crack_the_code().
+ *  is_enc determina a maneira que os blocos são percorridos, um valor diferente
+ *  de zero causa a criptografia do texto, e um valor igual a zero causa a
+ *  descriptogrfia.
  */
-void encrypt(const char *block, const int *order, char *cipher){
-    int tlen = strlen(block);
-    int i, j, n = 0;
+void crypt(const char *before, char *after, const int *order, const int is_enc){
+    int tlen = strlen(before);
+    int line, leap, i, j, n = 0;
 
     for( i = 0; i < *(order-1); i++ ){
         for( j = 0; (order[i]+j) < tlen; j += *(order-1) ){
-            cipher[n++] = block[order[i]+j];
-        }
-    }
-}
-
-/*  decrypt() faz o inverso de encrypt().
- *  A função percorre o texto seguindo os caracteres um após o outro e os guarda
- *  no vetor in_order seguindo o intervalo e ordem definidos pela palavra-chave.
- *  Usar uma palavra chave diferente da usada para encriptar o texto vai gerar
- *  um texto ainda mais embaralhado aqui.
- */
-void decrypt(const char *cipher, const int *order, char *block){
-    int tlen = strlen(cipher);
-    int i, j, n = 0;
-
-    for( i = 0; i < *(order-1); i++ ){
-        for( j = 0; (order[i]+j) < tlen; j += *(order-1) ){
-            block[order[i]+j] = cipher[n++];
+            line = n++;
+            leap = order[i]+j;
+            after[( is_enc ) ? line : leap] = before[( is_enc ) ? leap : line];
         }
     }
 }

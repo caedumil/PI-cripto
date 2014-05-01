@@ -34,13 +34,11 @@ char *dest_name(const char*);
 
 void enigma(const char*, char*, const char*, const int*);
 
-int handle_file(FILE*, FILE*, const int*, const int);
+int pre_crypt(FILE*, FILE*, const int*, const int);
 
 int *crack_the_code(const char*);
 
-void encrypt(const char*, const int*, char*);
-
-void decrypt(const char*, const int*, char*);
+void crypt(const char*, char*, const int*, const int);
 
 char *get_input(const char*, const int, const int);
 

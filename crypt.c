@@ -29,16 +29,21 @@
 #include "pi.h"
 
 int main(int argc, char *argv[]){
-    char *filename, *output = NULL;
+    char *filename = NULL;
+    char *output = NULL;
     int opt, is_enc, keep_file = 0;
 
     while( (opt = getopt(argc, argv, "+e:d:o::")) != -1 ){
         switch(opt){
             case 'e':
+                if( filename )
+                    break;
                 is_enc = 1;
                 filename = optarg;
                 break;
             case 'd':
+                if( filename )
+                    break;
                 is_enc = 0;
                 filename = optarg;
                 break;

@@ -105,18 +105,17 @@ void enigma(const char *source, char *dest, const char *key, const int mode){
  */
 int pre_crypt(FILE *file, FILE *saveas, const int *order, const int mode){
     char *before = calloc(BLOCK_SIZE, sizeof *before);
-    char *after = calloc(BLOCK_SIZE, sizeof *after);
-    int sig;
+    char *after;
+    int sig, size;
 
     while( ! (sig = feof(file)) ){
         memset(before, 0, BLOCK_SIZE);
-        fread(before, sizeof *before, BLOCK_SIZE-1, file);
-        memset(after, 0, BLOCK_SIZE);
-        crypt(before, after, order, mode);
-        fwrite(after, sizeof *after, strlen(after), saveas);
+        size = fread(before, sizeof *before, BLOCK_SIZE-1, file);
+        after = crypt(before, size, order, mode);
+        fwrite(after, sizeof *after, size, saveas);
+        free(after);
     }
     free(before);
-    free(after);
     return sig;
 }
 
@@ -172,17 +171,18 @@ int *crack_the_code(const char *pass){
  *  de zero causa a criptografia do texto, e um valor igual a zero causa a
  *  descriptogrfia.
  */
-void crypt(const char *before, char *after, const int *order, const int is_enc){
-    int tlen = strlen(before);
-    int line, leap, i, j, n = 0;
+char *crypt(const char *before, const int size, const int *order, const int is_enc){
+    char *after = calloc(size+1, sizeof *after);
+    int aa, bb, i, j, n = 0;
 
     for( i = 0; i < *(order-1); i++ ){
-        for( j = 0; (order[i]+j) < tlen; j += *(order-1) ){
-            line = n++;
-            leap = order[i]+j;
-            after[( is_enc ) ? line : leap] = before[( is_enc ) ? leap : line];
+        for( j = 0; (order[i]+j) < size; j += *(order-1) ){
+            aa = ( is_enc ) ? n++ : order[i]+j;
+            bb = ( is_enc ) ? order[i]+j : n++;
+            after[aa] = before[bb];
         }
     }
+    return after;
 }
 
 /*  get_input() cria um vetor para guardar a entrada de dados via teclado,

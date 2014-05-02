@@ -38,7 +38,7 @@ int pre_crypt(FILE*, FILE*, const int*, const int);
 
 int *crack_the_code(const char*);
 
-void crypt(const char*, char*, const int*, const int);
+char *crypt(const char*, const int, const int*, const int);
 
 char *get_input(const char*, const int, const int);
 

@@ -120,42 +120,43 @@ int pre_crypt(FILE *file, FILE *saveas, const int *order, const int mode){
 }
 
 /*  crack_the_code()
- *  A chave criptografica é copiada em um novo vetor 'apass'. 'apass' é usado
- *  para arrumar os itens em ordem alfabetica usando o algoritmo de ordenacao
- *  shellsort.
- *  Depois de ordenado, 'apass' e a chave original 'pass' são comparadas para
- *  encontrar a posicao de cada letra de 'apass' em 'pass'.
- *  Essa ordem é importante para criptografar e descriptografar o texto, e fica
- *  armazenada no vetor de inteiros 'code', que é o retorno da função. A
- *  primeira posição de 'code' guarda seu tamanho, e o ponteiro retornado
- *  aponta para a segunda posição, escondendo a informação do tamanho do vetor.
+ *  A chave criptografica é copiada em um novo vetor 'ord_pass'. 'ord_pass' é
+ *  usado para arrumar os itens em ordem alfabetica usando o algoritmo de
+ *  ordenacao shellsort.
+ *  Depois de ordenado, 'ord_pass' e a chave original 'pass' são comparadas
+ *  para encontrar a posicao de cada letra de 'ord_pass' em 'pass'.
+ *  Essa ordem é importante para criptografar e descriptografar o texto, e
+ *  fica armazenada no vetor de inteiros 'code', que é o retorno da função.
+ *  A primeira posição de 'code' guarda seu tamanho, e o ponteiro retornado
+ *  aponta para a segunda posição, escondendo a informação do tamanho do
+ *  vetor.
  */
 int *crack_the_code(const char *pass){
     int i, j, k, plen = strlen(pass);
-    int *code = calloc(strlen(pass)+1, sizeof *code);
+    int *code = calloc(plen+1, sizeof *code);
     int gap[8] = {1, 4, 10, 23, 57, 132, 301, 701};
-    char *apass = calloc(strlen(pass)+1, sizeof *apass);
+    char *ord_pass = calloc(plen+1, sizeof *ord_pass);
     char temp;
 
-    strcpy(apass, pass);
+    strcpy(ord_pass, pass);
     for( i = 7; i >= 0; i--){
         for( j = gap[i]; j < plen; j++ ){
-            temp = apass[j];
-            for( k = j; (k >= gap[i]) && (apass[k - gap[i]] > temp); k -= gap[i] ){
-                apass[k] = apass[k - gap[i]];
+            temp = ord_pass[j];
+            for( k = j; (k >= gap[i]) && (ord_pass[k-gap[i]] > temp); k -= gap[i] ){
+                ord_pass[k] = ord_pass[k - gap[i]];
             }
-            apass[k] = temp;
+            ord_pass[k] = temp;
         }
     }
     code[0] = plen;
     for( i = 0; i <= plen; i++ ){
         for( j = 0; j < plen; j++ ){
-            if( apass[i] == pass[j] )
+            if( ord_pass[i] == pass[j] )
                 code[i+1] = j;
         }
     }
-    free(apass);
-    return ++code;
+    free(ord_pass);
+    return code+1;
 }
 
 /*  crypt() é a função que modifica todo o texto.

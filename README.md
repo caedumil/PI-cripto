@@ -27,3 +27,5 @@ Código testado com GCC.
 `crypt -e [arquivo.txt]` para encriptar o conteudo do arquivo.
 
 `crypt -d [arquivo.txt]` para decriptar o conteudo do arquivo.
+
+`crypt -h` apresenta mensagem de ajuda e encerra o programa.

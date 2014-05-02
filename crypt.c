@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
     char *output = NULL;
     int opt, is_enc, keep_file = 0;
 
-    while( (opt = getopt(argc, argv, "+e:d:o::")) != -1 ){
+    while( (opt = getopt(argc, argv, "+e:d:o::h")) != -1 ){
         switch(opt){
             case 'e':
                 if( filename )
@@ -51,6 +51,18 @@ int main(int argc, char *argv[]){
                 keep_file = 1;
                 output = ( optarg ) ? optarg : argv[optind];
                 break;
+            case 'h':
+                if( filename )
+                    break;
+                fprintf(stdout,\
+                    "Usage: %s [OPERATION] [FILE]\n"\
+                    "  -e\tencrypt file\n"\
+                    "  -d\tdecrypt file\n"\
+                    "  -o\tspecify output file (if a name is given, will be "\
+                    "used as the filename)\n"\
+                    "  -h\tshow this help message and exists\n\n",\
+                    argv[0]);
+                exit(EXIT_SUCCESS);
             default:
                 fprintf(stderr,\
                     "Usage: %s [-d | -e file.txt] [-o [new_file.txt]] \n",\

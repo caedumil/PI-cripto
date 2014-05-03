@@ -60,7 +60,7 @@ int main(int argc, char *argv[]){
                     "  -d\tdecrypt file\n"\
                     "  -o\tspecify output file (if a name is given, will be "\
                     "used as the filename)\n"\
-                    "  -h\tshow this help message and exists\n\n",\
+                    "  -h\tshow this help message and exit\n\n",\
                     argv[0]);
                 exit(EXIT_SUCCESS);
             default:

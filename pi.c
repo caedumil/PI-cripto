@@ -83,8 +83,8 @@ char *dest_name(const char *filename){
  *  pelo de saída.
  */
 void enigma(const char *source, char *dest, const char *key, const int mode){
-    FILE *srcfile = fopen(source, "r");
-    FILE *dstfile = fopen(dest, "w+");
+    FILE *srcfile = fopen(source, "rb");
+    FILE *dstfile = fopen(dest, "wb+");
     int *order = crack_the_code(key);
 
     if( ! (srcfile && dstfile) ){

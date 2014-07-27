@@ -13,16 +13,11 @@ processamento de dados recebidos via teclado.
 * crypt.c aplica as funções em um programa capaz de demonstrar
 o funcionamento do algoritmo.
 
-## Compilação
+## Como compilar?
 
-    gcc -o crypt crypt.c pi.c
+    make
 
-Os arquivos .c devem ser compilados e linkados para o executável
-funcionar corretamente.
-
-Código testado com GCC.
-
-## Uso
+## Como usar?
 
 `crypt -e [arquivo.txt]` para encriptar o conteudo do arquivo.
 

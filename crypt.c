@@ -29,30 +29,24 @@
 #include "pi.h"
 
 int main(int argc, char *argv[]){
-    char *filename = NULL;
+    char **filename = NULL;
     char *output = NULL;
     int opt, is_enc, keep_file = 0;
 
-    while( (opt = getopt(argc, argv, "+e:d:o::h")) != -1 ){
+    while( (opt = getopt(argc, argv, "edo::h")) != -1 ){
         switch(opt){
             case 'e':
-                if( filename )
-                    break;
                 is_enc = 1;
-                filename = optarg;
                 break;
             case 'd':
-                if( filename )
-                    break;
                 is_enc = 0;
-                filename = optarg;
                 break;
             case 'o':
                 keep_file = 1;
                 output = ( optarg ) ? optarg : argv[optind];
                 break;
             case 'h':
-                if( filename )
+                if( optind != 1 )
                     break;
                 fprintf(stdout,\
                     "Usage: %s [OPERATION] [FILE]\n"\
@@ -70,15 +64,19 @@ int main(int argc, char *argv[]){
                 exit(EXIT_FAILURE);
         }
     }
-    if( ! output )
-        output = dest_name(filename);
-    enigma(filename, output, get_input("Enter the key: ", 100, 1), is_enc);
-    if( ! keep_file ){
-        remove(filename);
-        rename(output, filename);
+    filename = &argv[optind];
+    while( *filename != NULL ){
+        if( ! output )
+            output = dest_name(*filename);
+        enigma(*filename, output, get_input("Enter the key: ", 100, 1), is_enc);
+        if( ! keep_file ){
+            remove(*filename);
+            rename(output, *filename);
+        }
+        fprintf(stdout, "<%s> %s as <%s>\n", *filename,\
+            ( is_enc ) ? "encrypted" : "decrypted",\
+            ( keep_file ) ? output : *filename);
+        filename++;
     }
-    fprintf(stdout, "<%s> %s as <%s>\n", filename,\
-        ( is_enc ) ? "encrypted" : "decrypted",\
-        ( keep_file ) ? output : filename);
     exit(EXIT_SUCCESS);
 }

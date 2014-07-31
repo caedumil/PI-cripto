@@ -30,10 +30,10 @@
 
 int main(int argc, char *argv[]){
     char **filename = NULL;
-    char *output = NULL;
+    char *output = NULL, *key = NULL;
     int opt, is_enc, keep_file = 0;
 
-    while( (opt = getopt(argc, argv, "edoh")) != -1 ){
+    while( (opt = getopt(argc, argv, "edohk:")) != -1 ){
         switch(opt){
             case 'e':
                 is_enc = 1;
@@ -44,6 +44,9 @@ int main(int argc, char *argv[]){
             case 'o':
                 keep_file = 1;
                 break;
+            case 'k':
+                key = optarg;
+                break;
             case 'h':
                 if( optind != 1 )
                     break;
@@ -51,6 +54,7 @@ int main(int argc, char *argv[]){
                     "Usage: %s [OPERATION] [FILE]\n"\
                     "  -e\tencrypt file\n"\
                     "  -d\tdecrypt file\n"\
+                    "  -k\tkey to process the files. THIS IS INSECURE\n"
                     "  -o\tdon\'t overwrite the input file\n"\
                     "  -h\tshow this help message and exit\n\n",\
                     argv[0]);
@@ -65,7 +69,9 @@ int main(int argc, char *argv[]){
     filename = &argv[optind];
     while( *filename != NULL ){
         output = dest_name(*filename, is_enc);
-        enigma(*filename, output, get_input("Enter the key: ", 100, 1), is_enc);
+        if( ! (key && check_pass(key)) )
+            key = get_input("Enter the key: ", 100, 1);
+        enigma(*filename, output, key, is_enc);
         if( ! keep_file ){
             remove(*filename);
             rename(output, *filename);

@@ -66,15 +66,17 @@ int set_term(int mode){
  *  Essa função só é executada caso nenhum nome tenha sido especificado ao
  *  executar o programa.
  */
-char *dest_name(const char *filename){
+char *dest_name(const char *filename, const int is_enc){
     int len = strlen(filename);
-    char append[9] = "_out.txt";
     char *ch, *name = calloc(len+9, sizeof *name);
 
     strcpy(name, filename);
-    if( (ch = strstr(filename, append)) || (ch = strrchr(name, '.')) )
+    if( (ch = strstr(name, "_enc.txt")) ||\
+        (ch = strstr(name, "_dec.txt")) ||\
+        (ch = strrchr(name, '.')) ){
         *ch = 0;
-    strcat(name, append);
+    }
+    strcat(name, ( is_enc ) ? "_enc.txt" : "_dec.txt");
     return name;
 }
 

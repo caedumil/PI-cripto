@@ -30,7 +30,7 @@
 
 int set_term(int);
 
-char *dest_name(const char*);
+char *dest_name(const char*, const int);
 
 void enigma(const char*, char*, const char*, const int);
 

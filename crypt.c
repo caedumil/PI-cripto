@@ -31,8 +31,9 @@
 int main(int argc, char *argv[]){
     char **filename = NULL;
     char *output = NULL, *key = NULL;
-    int opt, is_enc, keep_file = 0;
+    int opt, ecode, is_enc, keep_file;
 
+    ecode = keep_file = 0;
     while( (opt = getopt(argc, argv, "edohk:")) != -1 ){
         switch(opt){
             case 'e':
@@ -71,15 +72,8 @@ int main(int argc, char *argv[]){
         output = dest_name(*filename, is_enc);
         if( ! (key && check_pass(key)) )
             key = get_input("Enter the key: ", 100, 1);
-        enigma(*filename, output, key, is_enc);
-        if( ! keep_file ){
-            remove(*filename);
-            rename(output, *filename);
-        }
-        fprintf(stdout, "<%s> %s as <%s>\n", *filename,\
-            ( is_enc ) ? "encrypted" : "decrypted",\
-            ( keep_file ) ? output : *filename);
+        ecode += enigma(*filename, output, key, is_enc, keep_file);
         filename++;
     }
-    exit(EXIT_SUCCESS);
+    ( ecode ) ? exit(EXIT_FAILURE) : exit(EXIT_SUCCESS);
 }

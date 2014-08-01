@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include "pi.h"
 
 /*  set_term() desabilita o retorno de caracteres no terminal. Basicamente a
@@ -84,18 +85,29 @@ char *dest_name(const char *filename, const int is_enc){
  *  cuidar do processamento do texto, e substitui, ou não, o arquivo de entrada
  *  pelo de saída.
  */
-void enigma(const char *source, char *dest, const char *key, const int mode){
-    FILE *srcfile = fopen(source, "rb");
-    FILE *dstfile = fopen(dest, "wb+");
+int enigma(const char *source, char *dest, const char *key, const int mode,\
+const int keep){
+    FILE *srcfile, *dstfile;
     int *order = crack_the_code(key);
 
-    if( ! (srcfile && dstfile) ){
-        fprintf(stderr, "Erro ao abrir arquivo, saindo!\n");
-        exit(EXIT_FAILURE);
+    if( (srcfile = fopen(source, "rb")) ){
+        if( (dstfile = fopen(dest, "wb+")) ){
+            pre_crypt(srcfile, dstfile, order, mode);
+            fclose(dstfile);
+            fclose(srcfile);
+            if( ! keep ){
+                remove(source);
+                rename(dest, source);
+            }
+            fprintf(stdout, "<%s> %s as <%s>\n", source,\
+                ( mode ) ? "encrypted" : "decrypted",\
+                ( keep ) ? dest : source);
+            return 0;
+        }
+        fclose(srcfile);
     }
-    pre_crypt(srcfile, dstfile, order, mode);
-    fclose(srcfile);
-    fclose(dstfile);
+    fprintf(stderr, "%s - %s\n", ( srcfile ) ? source : dest , strerror(errno));
+    return 1;
 }
 
 /*  pre_crypt() lê o arquivo de entrada em blocos de BLOCK_SIZE bytes por vez,

@@ -31,15 +31,27 @@
 int main(int argc, char *argv[]){
     char **filename = NULL;
     char *output = NULL, *key = NULL;
-    int opt, ecode, is_enc, keep_file;
+    int opt, ecode, mode_set, is_enc, keep_file;
 
-    ecode = keep_file = 0;
+    ecode = mode_set = keep_file = 0;
     while( (opt = getopt(argc, argv, "edohk:")) != -1 ){
         switch(opt){
             case 'e':
+                if( mode_set ){
+                    fprintf(stderr,\
+                        "Both Decrypt and Encrypt modes set, aborting\n");
+                    exit(EXIT_FAILURE);
+                }
+                mode_set = 1;
                 is_enc = 1;
                 break;
             case 'd':
+                if( mode_set ){
+                    fprintf(stderr,\
+                        "Both Encrypt and Decrypt modes set, aborting\n");
+                    exit(EXIT_FAILURE);
+                }
+                mode_set = 1;
                 is_enc = 0;
                 break;
             case 'o':

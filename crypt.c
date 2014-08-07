@@ -34,6 +34,7 @@ int main(int argc, char *argv[]){
     int opt, ecode, mode_set, is_enc, keep_file;
 
     ecode = mode_set = keep_file = 0;
+    opterr = 0;
     while( (opt = getopt(argc, argv, "edohk:")) != -1 ){
         switch(opt){
             case 'e':
@@ -61,7 +62,7 @@ int main(int argc, char *argv[]){
                 key = optarg;
                 break;
             case 'h':
-                if( optind != 1 )
+                if( mode_set )
                     break;
                 fprintf(stdout,\
                     "Usage: %s [OPERATION] [FILE]\n"\
@@ -74,7 +75,7 @@ int main(int argc, char *argv[]){
                 exit(EXIT_SUCCESS);
             default:
                 fprintf(stderr,\
-                    "Usage: %s [-d | -e file.txt] [-o [new_file.txt]] \n",\
+                    "Usage: %s [-d | -e] [-o] FILES \n",\
                     argv[0]);
                 exit(EXIT_FAILURE);
         }

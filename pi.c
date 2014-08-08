@@ -87,7 +87,7 @@ char *dest_name(const char *filename, const int is_enc){
  *  Ler o arquivo em blocos fixos permite controlar a quantidade de memória
  *  usada pelo programa.
  */
-int pre_crypt(FILE *file, FILE *saveas, const int *order, const int mode){
+int pre_crypt(FILE *file, FILE *saveas, int *order, const int mode){
     char *before = calloc(BLOCK_SIZE, sizeof *before);
     char *after;
     int sig, size;
@@ -100,6 +100,7 @@ int pre_crypt(FILE *file, FILE *saveas, const int *order, const int mode){
         free(after);
     }
     free(before);
+    free(order-1);
     return sig;
 }
 

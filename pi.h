@@ -32,8 +32,6 @@ int set_term(int);
 
 char *dest_name(const char*, const int);
 
-int enigma(const char*, char*, const char*, const int, const int);
-
 int pre_crypt(FILE*, FILE*, const int*, const int);
 
 int *crack_the_code(const char*);

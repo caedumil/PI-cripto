@@ -26,14 +26,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
+#include <errno.h>
 #include "pi.h"
 
 int main(int argc, char *argv[]){
+    FILE *srcfile, *dstfile;
     char **filename = NULL;
-    char *output = NULL, *key = NULL;
+    char *output, *key;
     int opt, ecode, mode_set, is_enc, keep_file;
 
-    ecode = mode_set = keep_file = 0;
+    output = key = NULL;
+    mode_set = keep_file = 0;
+    ecode = EXIT_SUCCESS;
     opterr = 0;
     while( (opt = getopt(argc, argv, "edohk:")) != -1 ){
         switch(opt){
@@ -85,8 +90,27 @@ int main(int argc, char *argv[]){
         output = dest_name(*filename, is_enc);
         if( ! (key && check_pass(key)) )
             key = get_input("Enter the key: ", 100, 1);
-        ecode += enigma(*filename, output, key, is_enc, keep_file);
+        if( (srcfile = fopen(*filename, "rb")) ){
+            if( (dstfile = fopen(output, "wb+")) ){
+                pre_crypt(srcfile, dstfile, crack_the_code(key), is_enc);
+                fclose(dstfile);
+                fclose(srcfile);
+                if( ! keep_file ){
+                    remove(*filename);
+                    rename(output, *filename);
+                }
+                fprintf(stdout, "<%s> %s as <%s>\n", *filename,\
+                    ( is_enc ) ? "encrypted" : "decrypted",\
+                    ( keep_file ) ? output : *filename);
+                filename++;
+                continue;
+            }
+            fclose(srcfile);
+        }
+        fprintf(stderr, "%s - %s\n", ( srcfile ) ? *filename : output,\
+            strerror(errno));
         filename++;
+        ecode = EXIT_FAILURE;
     }
-    ( ecode ) ? exit(EXIT_FAILURE) : exit(EXIT_SUCCESS);
+    exit(ecode);
 }

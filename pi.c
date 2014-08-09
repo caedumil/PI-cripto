@@ -100,6 +100,7 @@ int pre_crypt(FILE *file, FILE *saveas, int *order, const int mode){
         free(after);
     }
     free(before);
+    memset(order-1, 0, *(order-1));
     free(order-1);
     return sig;
 }
@@ -223,4 +224,15 @@ int check_pass(const char *pass){
         pass++;
     }
     return 1;
+}
+
+/*  erase_pass() apaga da memoria a chave criptografica escrevendo '0's antes
+ *  de liberar a memoria alocada.
+ *  A funçao finaliza setando NULL no ponteiro que acessava a area de memoria
+ *  liberada.
+ */
+void erase_pass(char **pass){
+    memset(*pass, 0, strlen(*pass)+1);
+    free(*pass);
+    *pass = NULL;
 }

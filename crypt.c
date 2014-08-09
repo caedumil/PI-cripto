@@ -34,12 +34,12 @@ int main(int argc, char *argv[]){
     FILE *srcfile, *dstfile;
     char **filename = NULL;
     char *tmp, *output, *key;
-    int opt, exit_code, mode_set, is_enc, keep_file;
+    int opt, exit_code, mode_set, is_enc, keep_file, repeat_key;
 
     output = key = NULL;
-    mode_set = keep_file = 0;
+    mode_set = keep_file = repeat_key = 0;
     opterr = 0;
-    while( (opt = getopt(argc, argv, "edohk:")) != -1 ){
+    while( (opt = getopt(argc, argv, "edohk")) != -1 ){
         switch(opt){
             case 'e':
                 if( mode_set ){
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
                 keep_file = 1;
                 break;
             case 'k':
-                key = optarg;
+                repeat_key = 1;
                 break;
             case 'h':
                 if( mode_set )
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]){
                     "Usage: %s [OPERATION] [FILE]\n"\
                     "  -e\tencrypt file\n"\
                     "  -d\tdecrypt file\n"\
-                    "  -k\tkey to process the files. THIS IS INSECURE\n"
+                    "  -k\trepeat the key on all files\n"
                     "  -o\tdon\'t overwrite the input file\n"\
                     "  -h\tshow this help message and exit\n\n",\
                     argv[0]);
@@ -112,6 +112,8 @@ int main(int argc, char *argv[]){
             fprintf(stderr, "%s - %s\n", tmp, strerror(errno));
             exit_code = EXIT_FAILURE;
         }
+        if( ! repeat_key )
+            erase_pass(&key);
         free(output);
         filename++;
     }

@@ -44,4 +44,6 @@ int input(char*, const int);
 
 int check_pass(const char*);
 
+void erase_pass(char**);
+
 #endif

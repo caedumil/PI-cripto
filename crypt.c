@@ -33,12 +33,11 @@
 int main(int argc, char *argv[]){
     FILE *srcfile, *dstfile;
     char **filename = NULL;
-    char *output, *key;
-    int opt, ecode, mode_set, is_enc, keep_file;
+    char *tmp, *output, *key;
+    int opt, exit_code, mode_set, is_enc, keep_file;
 
     output = key = NULL;
     mode_set = keep_file = 0;
-    ecode = EXIT_SUCCESS;
     opterr = 0;
     while( (opt = getopt(argc, argv, "edohk:")) != -1 ){
         switch(opt){
@@ -85,32 +84,36 @@ int main(int argc, char *argv[]){
                 exit(EXIT_FAILURE);
         }
     }
+    exit_code = EXIT_SUCCESS;
     filename = &argv[optind];
     while( *filename != NULL ){
         output = dest_name(*filename, is_enc);
         if( ! (key && check_pass(key)) )
             key = get_input("Enter the key: ", 100, 1);
-        if( (srcfile = fopen(*filename, "rb")) ){
-            if( (dstfile = fopen(output, "wb+")) ){
-                pre_crypt(srcfile, dstfile, crack_the_code(key), is_enc);
-                fclose(dstfile);
-                fclose(srcfile);
-                if( ! keep_file ){
-                    remove(*filename);
-                    rename(output, *filename);
-                }
-                fprintf(stdout, "<%s> %s as <%s>\n", *filename,\
-                    ( is_enc ) ? "encrypted" : "decrypted",\
-                    ( keep_file ) ? output : *filename);
-                filename++;
-                continue;
-            }
+        if( (srcfile = fopen(*filename, "rb")) &&\
+            (dstfile = fopen(output, "wb+")) ){
+            pre_crypt(srcfile, dstfile, crack_the_code(key), is_enc);
+            fclose(dstfile);
             fclose(srcfile);
+            if( ! keep_file ){
+                remove(*filename);
+                rename(output, *filename);
+            }
+            fprintf(stdout, "<%s> %s as <%s>\n", *filename,\
+                ( is_enc ) ? "encrypted" : "decrypted",\
+                ( keep_file ) ? output : *filename);
         }
-        fprintf(stderr, "%s - %s\n", ( srcfile ) ? *filename : output,\
-            strerror(errno));
+        else {
+            tmp = *filename;
+            if( srcfile ){
+                fclose(srcfile);
+                tmp = output;
+            }
+            fprintf(stderr, "%s - %s\n", tmp, strerror(errno));
+            exit_code = EXIT_FAILURE;
+        }
+        free(output);
         filename++;
-        ecode = EXIT_FAILURE;
     }
-    exit(ecode);
+    exit(exit_code);
 }

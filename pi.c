@@ -39,21 +39,21 @@
  */
 #ifdef __linux__
 #include <termios.h>
-int set_term(int mode){
+int set_term(bool no_echo){
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
-    term.c_lflag &= ( mode ) ? ~ECHO : ECHO;
+    term.c_lflag &= ( no_echo == true ) ? ~ECHO : ECHO;
     if( tcsetattr(STDIN_FILENO, TCSAFLUSH, &term) == -1 )
         return 0;
     return 1;
 }
 #elif _WIN32
 #include <windows.h>
-int set_term(int mode){
+int set_term(bool no_echo){
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     DWORD sett = 0;
     GetConsoleMode(hStdin, &sett);
-    sett &= ( mode ) ? ~ENABLE_ECHO_INPUT : ENABLE_ECHO_INPUT;
+    sett &= ( no_echo == true ) ? ~ENABLE_ECHO_INPUT : ENABLE_ECHO_INPUT;
     if( SetConsoleMode(hStdin, sett) == 0 )
         return 0;
     return 1;
@@ -66,7 +66,7 @@ int set_term(int mode){
  *  Essa função só é executada caso nenhum nome tenha sido especificado ao
  *  executar o programa.
  */
-char *dest_name(const char *filename, const int is_enc){
+char *dest_name(const char *filename, bool is_enc){
     int len = strlen(filename);
     char *ch, *name = calloc(len+9, sizeof *name);
 
@@ -76,7 +76,7 @@ char *dest_name(const char *filename, const int is_enc){
         (ch = strrchr(name, '.')) ){
         *ch = 0;
     }
-    strcat(name, ( is_enc ) ? "_enc.txt" : "_dec.txt");
+    strcat(name, ( is_enc == true ) ? "_enc.txt" : "_dec.txt");
     return name;
 }
 
@@ -87,12 +87,12 @@ char *dest_name(const char *filename, const int is_enc){
  *  Ler o arquivo em blocos fixos permite controlar a quantidade de memória
  *  usada pelo programa.
  */
-int pre_crypt(FILE *file, FILE *saveas, int *order, const int mode){
+int pre_crypt(FILE *file, FILE *saveas, int *order, bool mode){
     char *before = calloc(BLOCK_SIZE, sizeof *before);
     char *after;
     int sig, size;
 
-    while( ! (sig = feof(file)) ){
+    while( (sig = feof(file)) == 0 ){
         memset(before, 0, BLOCK_SIZE);
         size = fread(before, sizeof *before, BLOCK_SIZE-1, file);
         after = crypt(before, size, order, mode);
@@ -158,14 +158,14 @@ int *crack_the_code(const char *pass){
  *  de zero causa a criptografia do texto, e um valor igual a zero causa a
  *  descriptogrfia.
  */
-char *crypt(const char *before, const int size, const int *order, const int is_enc){
+char *crypt(const char *before, const int size, const int *order, bool is_enc){
     char *after = calloc(size+1, sizeof *after);
     int aa, bb, i, j, n = 0;
 
     for( i = 0; i < *(order-1); i++ ){
         for( j = 0; (order[i]+j) < size; j += *(order-1) ){
-            aa = ( is_enc ) ? n++ : order[i]+j;
-            bb = ( is_enc ) ? order[i]+j : n++;
+            aa = ( is_enc == true ) ? n++ : order[i]+j;
+            bb = ( is_enc == true ) ? order[i]+j : n++;
             after[aa] = before[bb];
         }
     }
@@ -175,11 +175,11 @@ char *crypt(const char *before, const int size, const int *order, const int is_e
 /*  get_input() cria um vetor para guardar a entrada de dados via teclado,
  *  usando um tamanho especificado na chamada da função.
  */
-char *get_input(const char *text, const int size, const int is_pass){
+char *get_input(const char *text, const int size, bool is_pass){
     char *in = calloc(size, sizeof *in);
 
     fprintf(stdout, "%s", text);
-    if( ! input(in, is_pass) ){
+    if( input(in, is_pass) == false ){
         free(in);
         return get_input(text, size, is_pass);
     }
@@ -194,36 +194,36 @@ char *get_input(const char *text, const int size, const int is_pass){
  *  'is_pass' também determina se o vetor lido será verificado por caracteres
  *  repetidos.
  */
-int input(char *txt, const int is_pass){
+bool input(char *txt, bool disable_echo){
     char tmp, *head = txt;
 
-    set_term(is_pass);
+    set_term(disable_echo);
     while( (tmp = getchar()) != '\n' )
         *txt++ = tmp;
     *txt = 0;
-    if( is_pass ){
-        set_term(0);
+    if( disable_echo == true ){
+        set_term(false);
         putchar('\n');
         return check_pass(head);
     }
-    return 1;
+    return true;
 }
 
 /*  check_pass() percorre a palavra-chave a fim de encontrar algum caractere
  *  repetido. Se houver repetição a função retorna 0, so nao houver retorna 1.
  */
-int check_pass(const char *pass){
+bool check_pass(const char *pass){
     int c;
 
     while( *pass != 0 ){
         c = 1;
         while( c < strlen(pass) ){
             if( *pass == pass[c++] )
-                return 0;
+                return false;
         }
         pass++;
     }
-    return 1;
+    return true;
 }
 
 /*  erase_pass() apaga da memoria a chave criptografica escrevendo '0's antes

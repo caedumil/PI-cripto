@@ -34,39 +34,40 @@ int main(int argc, char *argv[]){
     FILE *srcfile, *dstfile;
     char **filename = NULL;
     char *tmp, *output, *key;
-    int opt, exit_code, mode_set, is_enc, keep_file, repeat_key;
+    int opt, exit_code;
+    bool mode_set, is_enc, keep_file, repeat_key;
 
     output = key = NULL;
-    mode_set = keep_file = repeat_key = 0;
+    keep_file = repeat_key = false;
     opterr = 0;
     while( (opt = getopt(argc, argv, "edohk")) != -1 ){
         switch(opt){
             case 'e':
-                if( mode_set ){
+                if( mode_set == true ){
                     fprintf(stderr,\
                         "Both Decrypt and Encrypt modes set, aborting\n");
                     exit(EXIT_FAILURE);
                 }
-                mode_set = 1;
-                is_enc = 1;
+                mode_set = true;
+                is_enc = true;
                 break;
             case 'd':
-                if( mode_set ){
+                if( mode_set == true ){
                     fprintf(stderr,\
                         "Both Encrypt and Decrypt modes set, aborting\n");
                     exit(EXIT_FAILURE);
                 }
-                mode_set = 1;
-                is_enc = 0;
+                mode_set = true;
+                is_enc = false;
                 break;
             case 'o':
-                keep_file = 1;
+                keep_file = true;
                 break;
             case 'k':
-                repeat_key = 1;
+                repeat_key = true;
                 break;
             case 'h':
-                if( mode_set )
+                if( mode_set == true )
                     break;
                 fprintf(stdout,\
                     "Usage: %s [OPERATION] [FILE]\n"\
@@ -88,7 +89,7 @@ int main(int argc, char *argv[]){
     filename = &argv[optind];
     while( *filename != NULL ){
         output = dest_name(*filename, is_enc);
-        if( ! (key && check_pass(key)) )
+        if( key == NULL || check_pass(key) == false )
             key = get_input("Enter the key: ", 100, 1);
         if( (srcfile = fopen(*filename, "rb")) &&\
             (dstfile = fopen(output, "wb+")) ){
@@ -105,14 +106,14 @@ int main(int argc, char *argv[]){
         }
         else {
             tmp = *filename;
-            if( srcfile ){
+            if( srcfile != NULL ){
                 fclose(srcfile);
                 tmp = output;
             }
             fprintf(stderr, "%s - %s\n", tmp, strerror(errno));
             exit_code = EXIT_FAILURE;
         }
-        if( ! repeat_key )
+        if( repeat_key == false )
             erase_pass(&key);
         free(output);
         filename++;

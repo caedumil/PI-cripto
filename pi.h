@@ -26,23 +26,25 @@
 #ifndef PI_H_INCLUDED
 #define PI_H_INCLUDED
 
+#include <stdbool.h>
+
 #define BLOCK_SIZE 1024
 
-int set_term(int);
+int set_term(bool);
 
-char *dest_name(const char*, const int);
+char *dest_name(const char*, bool);
 
-int pre_crypt(FILE*, FILE*, int*, const int);
+int pre_crypt(FILE*, FILE*, int*, bool);
 
 int *crack_the_code(const char*);
 
-char *crypt(const char*, const int, const int*, const int);
+char *crypt(const char*, const int, const int*, bool);
 
-char *get_input(const char*, const int, const int);
+char *get_input(const char*, const int, bool);
 
-int input(char*, const int);
+bool input(char*, bool);
 
-int check_pass(const char*);
+bool check_pass(const char*);
 
 void erase_pass(char**);
 

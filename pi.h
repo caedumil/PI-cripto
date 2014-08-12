@@ -38,7 +38,9 @@ int pre_crypt(FILE*, FILE*, int*, bool);
 
 int *crack_the_code(const char*);
 
-char *crypt(const char*, const int, const int*, bool);
+char *encrypt(const char*, const int, const int*);
+
+char *decrypt(const char*, const int, const int*);
 
 char *get_passwd(const char*, const int);
 

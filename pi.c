@@ -85,16 +85,21 @@ char *dest_name(const char *filename, bool is_enc){
  *  garantir a marcação o final da string.
  *  Ler o arquivo em blocos fixos permite controlar a quantidade de memória
  *  usada pelo programa.
+ *  Para determinar qual das duas funçóes, encrypt() e decrypt(), será chamada
+ *  é usado um ponterio para função que recebe o endereço da função
+ *  correspondente ao modo de operação escolhido.
  */
-int pre_crypt(FILE *file, FILE *saveas, int *order, bool mode){
+int pre_crypt(FILE *file, FILE *saveas, int *order, bool is_enc){
+    char *(*crypt)(const char*, const int, const int*);
     char *before = calloc(BLOCK_SIZE, sizeof *before);
     char *after;
     int sig, size;
 
+    crypt = ( is_enc == true ) ? encrypt : decrypt;
     while( (sig = feof(file)) == 0 ){
         memset(before, 0, BLOCK_SIZE);
         size = fread(before, sizeof *before, BLOCK_SIZE-1, file);
-        after = crypt(before, size, order, mode);
+        after = crypt(before, size, order);
         fwrite(after, sizeof *after, size, saveas);
         free(after);
     }
@@ -144,7 +149,7 @@ int *crack_the_code(const char *pass){
     return code+1;
 }
 
-/*  crypt() é a função que modifica todo o texto.
+/*  __crypt() são as funções que modificam o arquivo.
  *  O bloco 'before' é percorrido em intervalos e guardada em um novo bloco
  *  'after'. O intervalo é igual ao tamanho da palavra-chave. Uma palavra chave
  *  de 6 letras faz o texto ser percorrido 0,6,12,18... depois 1,7,13,19... e
@@ -153,19 +158,28 @@ int *crack_the_code(const char *pass){
  *  percorrido, por exemplo, CRIPTO faz com que os indices e seus múltiplos
  *  sejam percorridos na ordem 0,6... 2,8... 5,11... 3,9... 1,7... 4,10...
  *  Essa ordem é obtida em crack_the_code().
- *  is_enc determina a maneira que os blocos são percorridos, um valor diferente
- *  de zero causa a criptografia do texto, e um valor igual a zero causa a
- *  descriptogrfia.
+ *  A diferença entre encrypt() e decrypt() está na maneira que o vetor é
+ *  percorrido e reorganizado.
  */
-char *crypt(const char *before, const int size, const int *order, bool is_enc){
+char *encrypt(const char *before, const int size, const int *order){
     char *after = calloc(size+1, sizeof *after);
-    int aa, bb, i, j, n = 0;
+    int i, j, n = 0;
 
     for( i = 0; i < *(order-1); i++ ){
         for( j = 0; (order[i]+j) < size; j += *(order-1) ){
-            aa = ( is_enc == true ) ? n++ : order[i]+j;
-            bb = ( is_enc == true ) ? order[i]+j : n++;
-            after[aa] = before[bb];
+            after[n++] = before[order[i]+j];
+        }
+    }
+    return after;
+}
+
+char *decrypt(const char *before, const int size, const int *order){
+    char *after = calloc(size+1, sizeof *after);
+    int i, j, n = 0;
+
+    for( i = 0; i < *(order-1); i++ ){
+        for( j = 0; (order[i]+j) < size; j += *(order-1) ){
+            after[order[i]+j] = before[n++];
         }
     }
     return after;

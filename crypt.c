@@ -38,7 +38,7 @@ int main(int argc, char *argv[]){
     bool mode_set, is_enc, keep_file, repeat_key;
 
     output = key = NULL;
-    keep_file = repeat_key = false;
+    mode_set = keep_file = repeat_key = false;
     opterr = 0;
     while( (opt = getopt(argc, argv, "edohk")) != -1 ){
         switch(opt){
@@ -85,6 +85,8 @@ int main(int argc, char *argv[]){
                 exit(EXIT_FAILURE);
         }
     }
+    if( mode_set == false )
+        exit(EXIT_FAILURE);
     exit_code = EXIT_SUCCESS;
     filename = &argv[optind];
     while( *filename != NULL ){

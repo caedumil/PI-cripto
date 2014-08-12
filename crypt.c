@@ -89,8 +89,8 @@ int main(int argc, char *argv[]){
     filename = &argv[optind];
     while( *filename != NULL ){
         output = dest_name(*filename, is_enc);
-        if( key == NULL || check_pass(key) == false )
-            key = get_input("Enter the key: ", 100, 1);
+        if( key == NULL )
+            key = get_passwd("Enter the key: ", 100);
         if( (srcfile = fopen(*filename, "rb")) &&\
             (dstfile = fopen(output, "wb+")) ){
             pre_crypt(srcfile, dstfile, crack_the_code(key), is_enc);
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]){
             exit_code = EXIT_FAILURE;
         }
         if( repeat_key == false )
-            erase_pass(&key);
+            erase_passwd(&key);
         free(output);
         filename++;
     }

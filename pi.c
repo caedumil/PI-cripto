@@ -35,25 +35,24 @@
  *  Para desabilitar o retorno é feita uma operação com bits para negar os
  *  atributos relacionados somente com o ECHO, negando-o logicamente com o
  *  operador '~'.
- *  O retorno é restaurado usando a mesma operação, so que com o ECHO padrão.
  */
 #ifdef __linux__
 #include <termios.h>
-int set_term(bool no_echo){
+int set_term(void){
     struct termios term;
     tcgetattr(STDIN_FILENO, &term);
-    term.c_lflag &= ( no_echo == true ) ? ~ECHO : ECHO;
+    term.c_lflag &= ~ECHO;
     if( tcsetattr(STDIN_FILENO, TCSAFLUSH, &term) == -1 )
         return 0;
     return 1;
 }
 #elif _WIN32
 #include <windows.h>
-int set_term(bool no_echo){
+int set_term(void){
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
     DWORD sett = 0;
     GetConsoleMode(hStdin, &sett);
-    sett &= ( no_echo == true ) ? ~ENABLE_ECHO_INPUT : ENABLE_ECHO_INPUT;
+    sett &= ~ENABLE_ECHO_INPUT;
     if( SetConsoleMode(hStdin, sett) == 0 )
         return 0;
     return 1;
@@ -172,66 +171,46 @@ char *crypt(const char *before, const int size, const int *order, bool is_enc){
     return after;
 }
 
-/*  get_input() cria um vetor para guardar a entrada de dados via teclado,
- *  usando um tamanho especificado na chamada da função.
+/*  get_passwd() aloca uma região na memória, com tamanho definido pela
+ *  chamada da função, para receber a chave criptográfica recebida por
+ *  teclado.
  */
-char *get_input(const char *text, const int size, bool is_pass){
+char *get_passwd(const char *text, const int size){
     char *in = calloc(size, sizeof *in);
 
     fprintf(stdout, "%s", text);
-    if( input(in, is_pass) == false ){
-        free(in);
-        return get_input(text, size, is_pass);
-    }
-    return in;
+    set_term();
+    fgets(in, size, stdin);
+    putchar('\n');
+    if( valid_passwd(in) == true )
+        return in;
+    free(in);
+    return get_passwd(text, size);
 }
 
-/*  input() lê a entrada de dados via teclado.
- *  Se 'is_pass' for diferente de zero, antes de iniciar a leitura, o retorno
- *  do terminal e desabilitado e reabilitado somente após toda leitura ter sido
- *  realizada. Isso previne que alguem espiando por cima do ombro do usuário
- *  consiga ler a palavra-chave na tela do computador.
- *  'is_pass' também determina se o vetor lido será verificado por caracteres
- *  repetidos.
+/*  valid_passwd() verifica se a chave contém ou não caracteres repetidos.
+ *  A função procura pela ocorrência do primeiro caractere do vetor, enquanto
+ *  a única ocorrência for a da primeira posição, a função continua até
+ *  verificar o vetor por completo. Qualquer caractere que se repita no vetor
+ *  faz a função retornar 'false'.
  */
-bool input(char *txt, bool disable_echo){
-    char tmp, *head = txt;
-
-    set_term(disable_echo);
-    while( (tmp = getchar()) != '\n' )
-        *txt++ = tmp;
-    *txt = 0;
-    if( disable_echo == true ){
-        set_term(false);
-        putchar('\n');
-        return check_pass(head);
-    }
-    return true;
-}
-
-/*  check_pass() percorre a palavra-chave a fim de encontrar algum caractere
- *  repetido. Se houver repetição a função retorna 0, so nao houver retorna 1.
- */
-bool check_pass(const char *pass){
-    int c;
-
-    while( *pass != 0 ){
-        c = 1;
-        while( c < strlen(pass) ){
-            if( *pass == pass[c++] )
-                return false;
+bool valid_passwd(char *pass){
+    while( strrchr(pass, *pass) == pass ){
+        if( *pass == '\n' ){
+            *pass = 0;
+            return true;
         }
         pass++;
     }
-    return true;
+    return false;
 }
 
-/*  erase_pass() apaga da memoria a chave criptografica escrevendo '0's antes
- *  de liberar a memoria alocada.
- *  A funçao finaliza setando NULL no ponteiro que acessava a area de memoria
+/*  erase_passwd() apaga da memória a chave criptografica escrevendo '0's antes
+ *  de liberar a região alocada.
+ *  A função finaliza setando NULL no ponteiro que acessava a área de memória
  *  liberada.
  */
-void erase_pass(char **pass){
+void erase_passwd(char **pass){
     memset(*pass, 0, strlen(*pass)+1);
     free(*pass);
     *pass = NULL;

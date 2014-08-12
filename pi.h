@@ -30,7 +30,7 @@
 
 #define BLOCK_SIZE 1024
 
-int set_term(bool);
+int set_term(void);
 
 char *dest_name(const char*, bool);
 
@@ -40,12 +40,10 @@ int *crack_the_code(const char*);
 
 char *crypt(const char*, const int, const int*, bool);
 
-char *get_input(const char*, const int, bool);
+char *get_passwd(const char*, const int);
 
-bool input(char*, bool);
+bool valid_passwd(char*);
 
-bool check_pass(const char*);
-
-void erase_pass(char**);
+void erase_passwd(char**);
 
 #endif

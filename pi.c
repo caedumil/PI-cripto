@@ -73,19 +73,20 @@ int set_term(void){
  *  executar o programa.
  */
 char *dest_name(const char *filename, bool is_enc){
+    char enc[5] = ".enc";
+    char dec[5] = ".dec";
     char *ch, *name;
 
-    name = calloc(strlen(filename)+9, sizeof *name);
+    name = calloc(strlen(filename)+5, sizeof *name);
 
     strcpy(name, filename);
 
-    if( (ch = strstr(name, "_enc.txt")) ||\
-        (ch = strstr(name, "_dec.txt")) ||\
-        (ch = strrchr(name, '.')) ){
+    if( (ch = strstr(name, enc)) ||\
+        (ch = strstr(name, dec)) ){
         *ch = 0;
     }
 
-    strcat(name, ( is_enc ) ? "_enc.txt" : "_dec.txt");
+    strcat(name, ( is_enc ) ? enc : dec);
 
     return name;
 }

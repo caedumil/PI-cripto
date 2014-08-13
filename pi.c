@@ -85,7 +85,7 @@ char *dest_name(const char *filename, bool is_enc){
         *ch = 0;
     }
 
-    strcat(name, ( is_enc == true ) ? "_enc.txt" : "_dec.txt");
+    strcat(name, ( is_enc ) ? "_enc.txt" : "_dec.txt");
 
     return name;
 }
@@ -106,9 +106,9 @@ void pre_crypt(FILE *file, FILE *saveas, int *order, bool is_enc){
     int size;
 
     before = calloc(BLOCK_SIZE, sizeof *before);
-    crypt = ( is_enc == true ) ? encrypt : decrypt;
+    crypt = ( is_enc ) ? encrypt : decrypt;
 
-    while( feof(file) == 0 ){
+    while( ! feof(file) ){
         memset(before, 0, BLOCK_SIZE);
         size = fread(before, sizeof *before, BLOCK_SIZE-1, file);
         after = crypt(before, size, order);
@@ -229,7 +229,7 @@ char *get_passwd(const char *text, const int size){
     fgets(in, size, stdin);
     putchar('\n');
 
-    if( valid_passwd(in) == false ){
+    if( ! valid_passwd(in) ){
         free(in);
         return get_passwd(text, size);
     }

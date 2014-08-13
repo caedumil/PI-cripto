@@ -54,7 +54,7 @@ int main(int argc, char *argv[]){
     while( (opt = getopt(argc, argv, "edohk")) != -1 ){
         switch(opt){
             case 'e':
-                if( mode_set == true ){
+                if( mode_set ){
                     fprintf(stderr,\
                         "Both Decrypt and Encrypt modes set, aborting\n");
                     exit(EXIT_FAILURE);
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]){
                 is_enc = true;
                 break;
             case 'd':
-                if( mode_set == true ){
+                if( mode_set ){
                     fprintf(stderr,\
                         "Both Encrypt and Decrypt modes set, aborting\n");
                     exit(EXIT_FAILURE);
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]){
                 repeat_key = true;
                 break;
             case 'h':
-                if( mode_set == true )
+                if( mode_set )
                     break;
 
                 fprintf(stdout,\
@@ -96,15 +96,15 @@ int main(int argc, char *argv[]){
         }
     }
 
-    if( mode_set == false )
+    if( ! mode_set )
         exit(EXIT_FAILURE);
 
     filename = &argv[optind];
 
-    while( *filename != NULL ){
+    while( *filename ){
         output = dest_name(*filename, is_enc);
 
-        if( key == NULL )
+        if( ! key )
             key = get_passwd("Enter the key: ", 100);
 
         if( (srcfile = fopen(*filename, "rb")) &&\
@@ -124,7 +124,7 @@ int main(int argc, char *argv[]){
         } else {
             tmp = *filename;
 
-            if( srcfile != NULL ){
+            if( srcfile ){
                 fclose(srcfile);
                 tmp = output;
             }
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]){
             fprintf(stderr, "%s - %s\n", tmp, strerror(errno));
         }
 
-        if( repeat_key == false )
+        if( ! repeat_key )
             erase_passwd(&key);
 
         free(output);

@@ -38,21 +38,28 @@
  */
 #ifdef __linux__
 #include <termios.h>
+
 int set_term(void){
     struct termios term;
+
     tcgetattr(STDIN_FILENO, &term);
     term.c_lflag &= ~ECHO;
+
     if( tcsetattr(STDIN_FILENO, TCSAFLUSH, &term) == -1 )
         return 0;
     return 1;
 }
 #elif _WIN32
 #include <windows.h>
+
 int set_term(void){
     HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+
     DWORD sett = 0;
+
     GetConsoleMode(hStdin, &sett);
     sett &= ~ENABLE_ECHO_INPUT;
+
     if( SetConsoleMode(hStdin, sett) == 0 )
         return 0;
     return 1;
@@ -66,16 +73,20 @@ int set_term(void){
  *  executar o programa.
  */
 char *dest_name(const char *filename, bool is_enc){
-    int len = strlen(filename);
-    char *ch, *name = calloc(len+9, sizeof *name);
+    char *ch, *name;
+
+    name = calloc(strlen(filename)+9, sizeof *name);
 
     strcpy(name, filename);
+
     if( (ch = strstr(name, "_enc.txt")) ||\
         (ch = strstr(name, "_dec.txt")) ||\
         (ch = strrchr(name, '.')) ){
         *ch = 0;
     }
+
     strcat(name, ( is_enc == true ) ? "_enc.txt" : "_dec.txt");
+
     return name;
 }
 
@@ -89,24 +100,25 @@ char *dest_name(const char *filename, bool is_enc){
  *  é usado um ponterio para função que recebe o endereço da função
  *  correspondente ao modo de operação escolhido.
  */
-int pre_crypt(FILE *file, FILE *saveas, int *order, bool is_enc){
+void pre_crypt(FILE *file, FILE *saveas, int *order, bool is_enc){
+    char *before, *after;
     char *(*crypt)(const char*, const int, const int*);
-    char *before = calloc(BLOCK_SIZE, sizeof *before);
-    char *after;
-    int sig, size;
+    int size;
 
+    before = calloc(BLOCK_SIZE, sizeof *before);
     crypt = ( is_enc == true ) ? encrypt : decrypt;
-    while( (sig = feof(file)) == 0 ){
+
+    while( feof(file) == 0 ){
         memset(before, 0, BLOCK_SIZE);
         size = fread(before, sizeof *before, BLOCK_SIZE-1, file);
         after = crypt(before, size, order);
         fwrite(after, sizeof *after, size, saveas);
         free(after);
     }
-    free(before);
+
     memset(order-1, 0, *(order-1));
     free(order-1);
-    return sig;
+    free(before);
 }
 
 /*  crack_the_code()
@@ -122,30 +134,39 @@ int pre_crypt(FILE *file, FILE *saveas, int *order, bool is_enc){
  *  vetor.
  */
 int *crack_the_code(const char *pass){
-    int i, j, k, plen = strlen(pass);
-    int *code = calloc(plen+1, sizeof *code);
+    int i, j, k, plen;
     int gap[8] = {1, 4, 10, 23, 57, 132, 301, 701};
-    char *ord_pass = calloc(plen+1, sizeof *ord_pass);
-    char temp;
+    int *code;
+    char tmp;
+    char *ord_pass;
+
+    plen = strlen(pass);
+    code = calloc(plen+1, sizeof *code);
+    ord_pass = calloc(plen+1, sizeof *ord_pass);
 
     strcpy(ord_pass, pass);
+
     for( i = 7; i >= 0; i--){
         for( j = gap[i]; j < plen; j++ ){
-            temp = ord_pass[j];
-            for( k = j; (k >= gap[i]) && (ord_pass[k-gap[i]] > temp); k -= gap[i] ){
+            tmp = ord_pass[j];
+            for( k = j; (k >= gap[i]) && (ord_pass[k-gap[i]] > tmp); k -= gap[i] ){
                 ord_pass[k] = ord_pass[k - gap[i]];
             }
-            ord_pass[k] = temp;
+            ord_pass[k] = tmp;
         }
     }
+
     code[0] = plen;
+
     for( i = 0; i <= plen; i++ ){
         for( j = 0; j < plen; j++ ){
             if( ord_pass[i] == pass[j] )
                 code[i+1] = j;
         }
     }
+
     free(ord_pass);
+
     return code+1;
 }
 
@@ -162,26 +183,34 @@ int *crack_the_code(const char *pass){
  *  percorrido e reorganizado.
  */
 char *encrypt(const char *before, const int size, const int *order){
-    char *after = calloc(size+1, sizeof *after);
-    int i, j, n = 0;
+    char *after;
+    int i, j, n;
+
+    after = calloc(size+1, sizeof *after);
+    n = 0;
 
     for( i = 0; i < *(order-1); i++ ){
         for( j = 0; (order[i]+j) < size; j += *(order-1) ){
             after[n++] = before[order[i]+j];
         }
     }
+
     return after;
 }
 
 char *decrypt(const char *before, const int size, const int *order){
-    char *after = calloc(size+1, sizeof *after);
-    int i, j, n = 0;
+    char *after;
+    int i, j, n;
+
+    after = calloc(size+1, sizeof *after);
+    n = 0;
 
     for( i = 0; i < *(order-1); i++ ){
         for( j = 0; (order[i]+j) < size; j += *(order-1) ){
             after[order[i]+j] = before[n++];
         }
     }
+
     return after;
 }
 
@@ -190,16 +219,21 @@ char *decrypt(const char *before, const int size, const int *order){
  *  teclado.
  */
 char *get_passwd(const char *text, const int size){
-    char *in = calloc(size, sizeof *in);
+    char *in;
+
+    in = calloc(size, sizeof *in);
 
     fprintf(stdout, "%s", text);
+
     set_term();
     fgets(in, size, stdin);
     putchar('\n');
-    if( valid_passwd(in) == true )
-        return in;
-    free(in);
-    return get_passwd(text, size);
+
+    if( valid_passwd(in) == false ){
+        free(in);
+        return get_passwd(text, size);
+    }
+    return in;
 }
 
 /*  valid_passwd() verifica se a chave contém ou não caracteres repetidos.

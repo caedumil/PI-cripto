@@ -31,15 +31,26 @@
 #include "pi.h"
 
 int main(int argc, char *argv[]){
-    FILE *srcfile, *dstfile;
-    char **filename = NULL;
-    char *tmp, *output, *key;
-    int opt, exit_code;
-    bool mode_set, is_enc, keep_file, repeat_key;
+    FILE *srcfile;
+    FILE *dstfile;
+    int opt;
+    char *tmp;
+    char *output;
+    char *key;
+    char **filename;
+    bool mode_set;
+    bool is_enc;
+    bool keep_file;
+    bool repeat_key;
 
-    output = key = NULL;
-    mode_set = keep_file = repeat_key = false;
+    key = NULL;
+    output = NULL;
+    mode_set = false;
+    keep_file = false;
+    repeat_key = false;
+
     opterr = 0;
+
     while( (opt = getopt(argc, argv, "edohk")) != -1 ){
         switch(opt){
             case 'e':
@@ -48,6 +59,7 @@ int main(int argc, char *argv[]){
                         "Both Decrypt and Encrypt modes set, aborting\n");
                     exit(EXIT_FAILURE);
                 }
+
                 mode_set = true;
                 is_enc = true;
                 break;
@@ -57,6 +69,7 @@ int main(int argc, char *argv[]){
                         "Both Encrypt and Decrypt modes set, aborting\n");
                     exit(EXIT_FAILURE);
                 }
+
                 mode_set = true;
                 is_enc = false;
                 break;
@@ -69,6 +82,7 @@ int main(int argc, char *argv[]){
             case 'h':
                 if( mode_set == true )
                     break;
+
                 fprintf(stdout,\
                     "Usage: %s [OPERATION] [FILE]\n"\
                     "  -e\tencrypt file\n"\
@@ -77,48 +91,52 @@ int main(int argc, char *argv[]){
                     "  -o\tdon\'t overwrite the input file\n"\
                     "  -h\tshow this help message and exit\n\n",\
                     argv[0]);
-                exit(EXIT_SUCCESS);
             default:
-                fprintf(stderr,\
-                    "Usage: %s [-d | -e] [-o] FILES \n",\
-                    argv[0]);
-                exit(EXIT_FAILURE);
+                exit(EXIT_SUCCESS);
         }
     }
+
     if( mode_set == false )
         exit(EXIT_FAILURE);
-    exit_code = EXIT_SUCCESS;
+
     filename = &argv[optind];
+
     while( *filename != NULL ){
         output = dest_name(*filename, is_enc);
+
         if( key == NULL )
             key = get_passwd("Enter the key: ", 100);
+
         if( (srcfile = fopen(*filename, "rb")) &&\
             (dstfile = fopen(output, "wb+")) ){
             pre_crypt(srcfile, dstfile, crack_the_code(key), is_enc);
             fclose(dstfile);
             fclose(srcfile);
+
             if( ! keep_file ){
                 remove(*filename);
                 rename(output, *filename);
             }
+
             fprintf(stdout, "<%s> %s as <%s>\n", *filename,\
                 ( is_enc ) ? "encrypted" : "decrypted",\
                 ( keep_file ) ? output : *filename);
-        }
-        else {
+        } else {
             tmp = *filename;
+
             if( srcfile != NULL ){
                 fclose(srcfile);
                 tmp = output;
             }
+
             fprintf(stderr, "%s - %s\n", tmp, strerror(errno));
-            exit_code = EXIT_FAILURE;
         }
+
         if( repeat_key == false )
             erase_passwd(&key);
+
         free(output);
         filename++;
     }
-    exit(exit_code);
+    exit(EXIT_SUCCESS);
 }

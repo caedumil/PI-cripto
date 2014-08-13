@@ -34,7 +34,7 @@ int set_term(void);
 
 char *dest_name(const char*, bool);
 
-int pre_crypt(FILE*, FILE*, int*, bool);
+void pre_crypt(FILE*, FILE*, int*, bool);
 
 int *crack_the_code(const char*);
 

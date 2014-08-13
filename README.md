@@ -13,14 +13,21 @@ processamento de dados recebidos via teclado.
 * crypt.c aplica as funções em um programa capaz de demonstrar
 o funcionamento do algoritmo.
 
-## Como compilar?
+## Para compilar
 
     make
 
 ## Como usar?
 
-`crypt -e [arquivo.txt]` para encriptar o conteudo do arquivo.
+    crypt [-h] [-e | -d] [-k] [-o] FILES
 
-`crypt -d [arquivo.txt]` para decriptar o conteudo do arquivo.
+Argumentos necessários (mutuamente exclusivos):
 
-`crypt -h` apresenta mensagem de ajuda e encerra o programa.
+* -e    criptografa os arquivos.
+* -d    descriptografa os arquivos.
+
+Argumentos opcionais:
+
+* -k    repete a chave criptográfica em todos os arquivos.
+* -o    não remove o arquivo original.
+* -h    apresenta uma mensagem de ajuda e finaliza o programa.

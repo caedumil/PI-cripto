@@ -42,8 +42,8 @@ DEP = $(SRC:.c=.d)
 
 all: $(TARGET)
 
-debug: CFLAGS += -g
 debug: $(TARGET)
+debug: CFLAGS += -g
 
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) $^ -o $@

@@ -44,7 +44,7 @@ char *decrypt(const char*, const int, const int*);
 
 char *get_passwd(const char*, const int);
 
-bool valid_passwd(char*);
+bool valid_passwd(const char*);
 
 void erase_passwd(char**);
 

@@ -222,7 +222,7 @@ char *decrypt(const char *before, const int size, const int *order){
  *  teclado.
  */
 char *get_passwd(const char *text, const int size){
-    char *in;
+    char *in, *pass;
 
     in = calloc(size, sizeof *in);
 
@@ -232,11 +232,13 @@ char *get_passwd(const char *text, const int size){
     fgets(in, size, stdin);
     putchar('\n');
 
-    if( ! valid_passwd(in) ){
+    pass = strtok(in, "\n");
+
+    if( ! valid_passwd(pass) ){
         free(in);
         return get_passwd(text, size);
     }
-    return in;
+    return pass;
 }
 
 /*  valid_passwd() verifica se a chave contém ou não caracteres repetidos.
@@ -245,13 +247,10 @@ char *get_passwd(const char *text, const int size){
  *  verificar o vetor por completo. Qualquer caractere que se repita no vetor
  *  faz a função retornar 'false'.
  */
-bool valid_passwd(char *pass){
+bool valid_passwd(const char *pass){
     while( strrchr(pass, *pass) == pass ){
-        if( *pass == '\n' ){
-            *pass = 0;
+        if( *(pass++) == 0 )
             return true;
-        }
-        pass++;
     }
     return false;
 }

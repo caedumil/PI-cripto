@@ -53,9 +53,11 @@ int set_term(void){
 #include <windows.h>
 
 int set_term(void){
-    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    HANDLE hStdin;
+    DWORD sett;
 
-    DWORD sett = 0;
+    hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    sett = 0;
 
     GetConsoleMode(hStdin, &sett);
     sett &= ~ENABLE_ECHO_INPUT;

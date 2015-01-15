@@ -26,6 +26,10 @@
 #ifndef PI_H_INCLUDED
 #define PI_H_INCLUDED
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include <stdbool.h>
 
 #define BLOCK_SIZE 1024

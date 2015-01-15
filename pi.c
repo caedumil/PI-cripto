@@ -23,10 +23,6 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 #include "pi.h"
 
 /*  set_term() desabilita o retorno de caracteres no terminal. Basicamente a

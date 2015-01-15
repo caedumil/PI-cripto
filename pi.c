@@ -99,8 +99,8 @@ char *dest_name(const char *filename, bool is_enc){
  *  garantir a marcação o final da string.
  *  Ler o arquivo em blocos fixos permite controlar a quantidade de memória
  *  usada pelo programa.
- *  Para determinar qual das duas funçóes, encrypt() e decrypt(), será chamada
- *  é usado um ponterio para função que recebe o endereço da função
+ *  Para determinar qual das duas funçóes, tr_encrypt() e tr_decrypt(), será
+ *  chamada é usado um ponterio para função que recebe o endereço da função
  *  correspondente ao modo de operação escolhido.
  */
 void pre_crypt(FILE *file, FILE *saveas, int *order, bool is_enc){
@@ -109,7 +109,7 @@ void pre_crypt(FILE *file, FILE *saveas, int *order, bool is_enc){
     int size;
 
     before = calloc(BLOCK_SIZE, sizeof *before);
-    crypt = ( is_enc ) ? encrypt : decrypt;
+    crypt = ( is_enc ) ? tr_encrypt : tr_decrypt;
 
     while( ! feof(file) ){
         memset(before, 0, BLOCK_SIZE);
@@ -182,10 +182,10 @@ int *crack_the_code(const char *pass){
  *  percorrido, por exemplo, CRIPTO faz com que os indices e seus múltiplos
  *  sejam percorridos na ordem 0,6... 2,8... 5,11... 3,9... 1,7... 4,10...
  *  Essa ordem é obtida em crack_the_code().
- *  A diferença entre encrypt() e decrypt() está na maneira que o vetor é
+ *  A diferença entre tr_encrypt() e tr_decrypt() está na maneira que o vetor é
  *  percorrido e reorganizado.
  */
-char *encrypt(const char *before, const int size, const int *order){
+char *tr_encrypt(const char *before, const int size, const int *order){
     char *after;
     int i, j, n;
 
@@ -201,7 +201,7 @@ char *encrypt(const char *before, const int size, const int *order){
     return after;
 }
 
-char *decrypt(const char *before, const int size, const int *order){
+char *tr_decrypt(const char *before, const int size, const int *order){
     char *after;
     int i, j, n;
 
